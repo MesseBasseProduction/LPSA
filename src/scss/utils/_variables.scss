@@ -1,0 +1,42 @@
+/* Global variable definition */
+:root {
+  --spacing-huge: 8rem;
+  --spacing-large: 4rem;
+  --spacing: 2rem;
+  --spacing-small: 1rem;
+  --spacing-tiny: .5rem;
+
+  --transition: .2s;
+  --transition-long: .5s;
+
+  --color-main: rgb(191, 255, 191);
+  --color-main-darker: rgb(161, 221, 161);
+  --color-main-alpha: rgba(117, 140, 120, .75);
+
+  --color-alt-1: #b1c5a0;
+  --color-alt-1-darker: #909e83;
+
+  --color-alt-2: #cbe2d2;
+  --color-alt-2-darker: #99aa9e;
+
+  --color-bg: #FAFAFA;
+  --color-bg-darker: #DADADA;
+  --color-fg: #181818;
+}
+
+/* Define custom font */
+@font-face {
+  font-family: 'Tangerine';
+  src: url('../../assets/font/Tangerine_Regular.ttf') format('truetype'),
+    url('../../assets/font/Tangerine_Regular.woff') format('woff');
+}
+
+@keyframes rotate-plane {
+  0% {
+    transform: perspective(120px) rotateX(0deg) rotateY(0deg);
+  } 50% {
+    transform: perspective(120px) rotateX(-180.1deg) rotateY(0deg);
+  } 100% {
+    transform: perspective(120px) rotateX(-180deg) rotateY(-179.9deg);
+  }
+}

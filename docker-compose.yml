@@ -1,0 +1,11 @@
+version: "3"
+services:
+  guillaumebeaulieu.com:
+    container_name: valentinedondon.fr_node
+    build: .
+    command: npm run start
+    restart: always
+    ports:
+      - 8050:8050
+    environment:
+      - NODE_ENV=prod
