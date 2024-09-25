@@ -22,12 +22,12 @@ app.use('/assets', express.static(path.join(__dirname, '../assets'), { // Serve 
 // Page urls
 app.get('/',  (req, res) => {
 console.log(`${(new Date()).toISOString()} | LPSA v${version} | 200 ${req.originalUrl} page requested, return index.html`);
-res.sendFile(path.join(__dirname, '../assets/html/index.html'));
+res.sendFile(path.join(__dirname, '../index.html'));
 });
 // Send / for all urls, avoid 404
 app.use((req, res) => {
   console.log(`${(new Date()).toISOString()} | LPSA v${version} | 404 ${req.originalUrl} page requested, return index.html`);
-  res.sendFile(path.join(__dirname, '../assets/html/index.html'));
+  res.sendFile(path.join(__dirname, '../index.html'));
 });
 
 // Start server console
