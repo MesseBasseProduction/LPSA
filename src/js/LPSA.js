@@ -14,6 +14,10 @@ class LPSA {
     this._tensThreshold = 0; // Tens tolerance threshold
     this._resultsAmount = 1; // Amount of required results
     this._db = null;
+    this._perf = {
+      db: { m1: null, m2: null },
+      analysis: { m1: null, m2: null }
+    };
     // Begin website initialization
     this._initApp()
       .then(this._events.bind(this))
@@ -37,6 +41,7 @@ class LPSA {
           }
         }
       });
+      // Try to load DB from local storage
       const db = window.localStorage.getItem('session-db');
       if (db !== null) {
         this._fillDatabase(JSON.parse(db));
@@ -73,20 +78,7 @@ class LPSA {
       document.querySelector('#loading-overlay').style.opacity = 0;
       setTimeout(() => {
         document.querySelector('#loading-overlay').style.display = 'none';
-/*
-        this._mainScroll = new window.ScrollBar({
-          target: document.body,
-          minSize: 200,
-          style: {
-            color: '#758C78'
-          }
-        });
-*/
-        // Force raf after scroll creation to make scrollbar properly visible
-        requestAnimationFrame(() => {
-          //this._mainScroll.updateScrollbar();
-          resolve();
-        });
+        resolve();
       }, 400);
     });
   }
@@ -109,6 +101,7 @@ class LPSA {
     }).format(new Date(json.date));
     document.getElementById('feedback-label').innerHTML = `Import de la base de donnée du ${date}...`;
     document.getElementById('aside-content').innerHTML = ''; // Clear previous content
+    this._perf.db.m1 = performance.now();
     for (let i = 0; i < json.data.length; ++i) {
       const series = document.createElement('DIV');
       series.classList.add('series');
@@ -139,13 +132,13 @@ class LPSA {
     requestAnimationFrame(() => {
       this._asideScroll.updateScrollbar();
     });
-
+    this._perf.db.m2 = performance.now();
     window.notification.success({ 
       message: `Base de donnée du ${date} chargée`,
       CBtitle: 'Voir les données',
       callback: () => this._toggleAside()
     });
-    document.getElementById('feedback-label').innerHTML = `Base de donnée du ${date} chargée.`;
+    document.getElementById('feedback-label').innerHTML = `Base de donnée du ${date} chargée en ${((this._perf.db.m2 - this._perf.db.m1) / 1000).toFixed(3)} seconde(s).`;
   }
 
 
@@ -197,7 +190,7 @@ class LPSA {
 
   _updateThresholdRange(e) {
     const value = e.target.value;
-    this._threshold = parseInt(value); // Save value as integer
+    this._tensThreshold = parseInt(value); // Save value as integer
     document.querySelector('#threshold-range-label').innerHTML = `Tolérance ${value}`;
   }
 
@@ -252,13 +245,14 @@ class LPSA {
       e.target.blur();
       return;
     }
-    // Starting analysis
+    // Start analysis
     this._seriesAnalysis(isFilled);
   }
 
 
   _seriesAnalysis(length) {
     document.getElementById('feedback-label').innerHTML = `Démarrage de l'analyse, serie évaluée ${length}/9...`;
+    this._perf.analysis.m1 = performance.now();
     // Select matching input from given length
     let targetData = null;
     for (let i = 0; i < this._db.data.length; ++i) {
@@ -273,70 +267,58 @@ class LPSA {
       document.getElementById('feedback-label').innerHTML = `Aucune donnée en base pour des séries evalués ${length}/9.`;
       return;
     }
+    // Internal method to iterates db and compare against input
+    const computeCandidates = targetArray => {
+      let outputCandidates = []; // In this aray, we store the distance value with input. The lower the best
+      for (let i = 0; i < targetArray.length; ++i) {
+        // Perform iteration on the 3 triplets
+        let distance = 0;
+        let usableCandidate = true; // Is the studied candidate worth adding to results
+        for (let j = 0; j < 3; ++j) {
+          for (let k = 0; k < 3; ++k) {
+            // We aim to compute a distance between target input and studied series.
+            // The distance is a substraction (in abs value) of those value
+            // If values are from a different tens, we ignore the comparison*
+            //* Depending on the tolerance threshold, we can compare number of different tens according to thresh value
+            const studiedTens = parseInt(`${targetArray[i].values[j][k] / 10}`[0]);
+            const inputTens = parseInt(`${this._input[j][k] / 10}`[0]);
+
+            if (studiedTens === inputTens) {
+              // First use case, tens are the same, compute distance
+              distance += Math.abs(targetArray[i].values[j][k] - this._input[j][k]);
+            } else if (Math.abs(targetArray[i].values[j][k] - this._input[j][k]) <= this._tensThreshold) {
+              // Otherwise, the absolute substraction is under or equal to tolerance threshold
+              distance += Math.abs(targetArray[i].values[j][k] - this._input[j][k]);
+            } else {
+              // Candidate is not relevant as a result
+              usableCandidate = false;
+            }
+          }
+        }
+        // Push result to array, index will match goFor length
+        if (usableCandidate === true && distance < 100) {
+          outputCandidates.push({
+            distance: distance,
+            series: targetArray[i]
+          });
+        }
+      }
+
+      return outputCandidates;
+    };
     // Perform analysis
-    // First parse goFor values to check best matches
-    let goForCandidates = []; // In this aray, we store the distance value with input. The lower the best
-    for (let i = 0; i < targetData.goFor.length; ++i) {
-      // Perform iteration on the 3 triplets
-      let distance = 0;
-      for (let j = 0; j < 3; ++j) {
-        for (let k = 0; k < 3; ++k) {
-          // First implem is to get absolute value of substraction, to compute distance
-          // On second phase, we will only compare numbers in the same tens
-          // ez way is const tens = Math.pow( 10, Math.floor( Math.log(n) / Math.log(10) ) );
-          distance += Math.abs(targetData.goFor[i].values[j][k] - this._input[j][k]);
-        }
-      }
-      // Push result to array, index will match goFor length
-      goForCandidates.push({
-        distance: distance,
-        series: targetData.goFor[i]
-      });
-    }
-    // Then parse goAgainst values for matches
-    let goAgainstCandidates = []; // In this aray, we store the distance value with input. The lower the best
-    for (let i = 0; i < targetData.goAgainst.length; ++i) {
-      // Perform iteration on the 3 triplets
-      let distance = 0;
-      for (let j = 0; j < 3; ++j) {
-        for (let k = 0; k < 3; ++k) {
-          // First implem is to get absolute value of substraction, to compute distance
-          // On second phase, we will only compare numbers in the same tens
-          // ez way is const tens = Math.pow( 10, Math.floor( Math.log(n) / Math.log(10) ) );
-          distance += Math.abs(targetData.goAgainst[i].values[j][k] - this._input[j][k]);
-        }
-      }
-      // Push result to array, index will match goFor length
-      goAgainstCandidates.push({
-        distance: distance,
-        series: targetData.goAgainst[i]
-      });
-    }
-    // Perform sorting on values
+    let goForCandidates = computeCandidates(targetData.goFor);
+    let goAgainstCandidates = computeCandidates(targetData.goAgainst);
+    // Perform sorting on result values by distance
     goForCandidates = goForCandidates.sort((a, b) => { return a.distance - b.distance; });
     goAgainstCandidates = goAgainstCandidates.sort((a, b) => { return a.distance - b.distance; });
-    // Update GUI with best candidates
-    for (let i = 0; i < this._resultsAmount; ++i) {
-      const goForElement = this._buildElement(goForCandidates[i].series);
-      const goForItem = document.createElement('DIV');
-      goForItem.classList.add('category-item');
-      goForItem.innerHTML = `
-        <h4>${goForCandidates[i].distance}</h4>
-      `;
-      goForItem.appendChild(goForElement);
-      document.getElementById('go-for').appendChild(goForItem);
-      const goAgainstElement = this._buildElement(goAgainstCandidates[i].series);
-      const goAgainstItem = document.createElement('DIV');
-      goAgainstItem.classList.add('category-item');
-      goAgainstItem.innerHTML = `
-        <h4>${goAgainstCandidates[i].distance}</h4>
-      `;
-      goAgainstItem.appendChild(goAgainstElement);
-      document.getElementById('go-against').appendChild(goAgainstItem);
-    }
-
-    console.log(goForCandidates);
-    console.log(goAgainstCandidates);
+    this._resultsModal(goForCandidates, goAgainstCandidates);
+    // Search completed
+    this._perf.analysis.m2 = performance.now();
+    window.notification.success({ 
+      message: `Analyse des données terminée`
+    });
+    document.getElementById('feedback-label').innerHTML = `Analyse de la serie terminée :  ${goForCandidates.length + goAgainstCandidates.length} résultat(s).`;
   }
 
 
@@ -357,6 +339,71 @@ class LPSA {
   // Modal related methods
 
 
+  _resultsModal(goForCandidates, goAgainstCandidates) {
+    const overlay = document.getElementById('modal-overlay');
+    // Open modal event
+    fetch(`assets/html/resultsmodal.html`).then(data => {
+      overlay.style.display = 'flex';
+      data.text().then(htmlString => {
+        const container = document.createRange().createContextualFragment(htmlString);
+        // Update modal summary info
+        const v = this._input;
+        container.querySelector('#studied-series').innerHTML = `
+          ${v[0][0]}, ${v[0][1]}, ${v[0][2]} / ${v[1][0]}, ${v[1][1]}, ${v[1][2]} / ${v[2][0]}, ${v[2][1]}, ${v[2][2]}
+        `;
+        container.querySelector('#study-stats').innerHTML = `
+          ${goForCandidates.length + goAgainstCandidates.length} résultat(s) trouvés dans la base de donnée.<br>
+          Ces résultats ont été trouvés en ${((this._perf.db.m2 - this._perf.db.m1) / 1000).toFixed(3)} seconde(s).<br>
+          Le nombre de résultats à afficher par catégorie est de ${this._resultsAmount}.<br>
+          La tolérance pour les calculs entre dizaines est de ${this._tensThreshold}.
+        `;
+        // Update GUI with best candidates
+        for (let i = 0; i < this._resultsAmount; ++i) {
+          // Only add goFor candidate if exists in results
+          if (goForCandidates[i]) {
+            const goForElement = this._buildElement(goForCandidates[i].series);
+            const goForItem = document.createElement('DIV');
+            goForItem.classList.add('category-item');
+            goForItem.innerHTML = `
+              <h4>${100 - goForCandidates[i].distance}%</h4>
+            `;
+            goForItem.appendChild(goForElement);
+            container.querySelector('#go-for').appendChild(goForItem);
+          }
+          // Same goes for goAgainst candidates
+          if (goAgainstCandidates[i]) {
+            const goAgainstElement = this._buildElement(goAgainstCandidates[i].series);
+            const goAgainstItem = document.createElement('DIV');
+            goAgainstItem.classList.add('category-item');
+            goAgainstItem.innerHTML = `
+              <h4>${100 - goAgainstCandidates[i].distance}%</h4>
+            `;
+            goAgainstItem.appendChild(goAgainstElement);
+            container.querySelector('#go-against').appendChild(goAgainstItem);
+          }
+        }
+
+        const scroll = new window.ScrollBar({
+          target: container.querySelector('.results-wrapper'),
+          minSize: 200,
+          style: {
+            color: '#758C78'
+          }
+        });
+
+        // Force raf after scroll creation to make scrollbar properly visible
+        requestAnimationFrame(() => {
+          scroll.updateScrollbar();
+        });
+
+        container.querySelector('#close-button').addEventListener('click', this._closeModal.bind(this));
+        overlay.appendChild(container);
+        setTimeout(() => overlay.style.opacity = 1, 50);
+      });
+    }).catch(e => console.error(e));
+  }
+
+
   _infoModal() {
     const overlay = document.getElementById('modal-overlay');
     // Open modal event
@@ -372,7 +419,7 @@ class LPSA {
 
 
   _closeModal(e) {
-    if (e.srcElement.id !== 'modal-overlay' && e.srcElement.className !== 'close-modal') {
+    if (e.srcElement.id !== 'modal-overlay' && e.srcElement.className !== 'close-modal' && e.srcElement.id !== 'close-button') {
       return;
     }
 

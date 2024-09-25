@@ -13,18 +13,18 @@
   transition: all .4s;
 
   .modal {
-    background: linear-gradient(240deg, var(--color-bg) 0%, var(--color-bg-darker) 100%);
+    background-color: var(--color-bg);
     border-bottom: solid 5px var(--color-alt-1);
     border-top: solid 5px var(--color-alt-1);
     border-radius: .5rem;
     box-shadow: 0 0 5px 5px rgba(0, 0, 0, .15);
-    padding: 3rem;
     position: relative;
 
     p.close-modal {
       cursor: pointer;
       color: var(--color-fg);
       font-size: 4rem;
+      line-height: 5rem;
       margin: 0;
       position: absolute;
       right: 1rem;
@@ -39,9 +39,36 @@
       }
     }
 
-    h1 {
-      margin-bottom: var(--spacing);
-      text-align: center;
+    header {
+      align-items: center;
+      background-color: rgb(245, 245, 245);
+      border-bottom: solid 1px rgba(0, 0, 0, .15);
+      display: flex;
+      height: 5rem;
+      justify-content: center;
+
+      span {
+        font-style: italic;
+      }
+    }
+
+    main {
+      max-height: calc(100% - 10rem);
+      padding: 2rem;
+      width: 100%;
+
+      p {
+        margin-bottom: 1rem;
+      }
+    }
+
+    footer {
+      align-items: center;
+      background-color: rgb(245, 245, 245);
+      border-top: solid 1px rgba(0, 0, 0, .15);
+      display: flex;
+      height: 5rem;
+      justify-content: center;
     }
 
     button {
@@ -52,7 +79,6 @@
       display: block;
       margin-left: auto;
       margin-right: auto;
-      margin-top: var(--spacing);
       padding: var(--spacing-small) var(--spacing);
 
       transition: all var(--transition);
@@ -62,6 +88,81 @@
       &:hover {
         background-color: var(--color-alt-2);
       }
+    }
+
+    &.modal-results {
+      height: 100%;
+      max-height: 90%;
+      max-width: 90%;
+      width: 130rem;
+
+      .analysis-summary {
+        p {
+          margin-top: 2rem;
+        }
+      }
+
+      .results-wrapper {
+        border-radius: .5rem;
+        display: block;
+        height: 100%;
+        margin-bottom: 2rem;
+        padding: 0;
+        text-align: center;
+        width: 100%;
+    
+        .catergories-grid {
+          display: grid;
+          grid-template-columns: 50% 50%;
+          width: calc(100% - var(--default-scroll-size));
+
+          h3 {
+            margin: 1rem 0;
+          }
+
+          .go-for {
+            color: var(--color-main-darker);
+          }
+    
+          .go-against {
+            color: rgb(255, 75, 75);
+          }
+    
+          .category-item {
+            align-items: center;
+            background-color: rgb(245, 245, 245);
+            border: solid 1px rgba(0, 0, 0, .15);
+            border-radius: .5rem;
+            display: grid;
+            grid-template-columns: 3rem 1fr;
+            height: 6rem;
+            margin: 1rem;
+            padding: .5rem;
+    
+            p {
+              font-size: 1.6rem;
+              margin-bottom: 0;
+        
+              span {
+                display: block;
+    
+                &.value {
+                  font-weight: bold;
+                }
+        
+                &.additionnal {
+                  font-size: 1.4rem;
+                  font-style: italic;
+                }
+      
+                &.comment {
+                  font-size: 1.2rem;
+                }
+              }
+            }
+          }
+        }
+      }    
     }
   }
 }
