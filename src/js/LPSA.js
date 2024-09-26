@@ -5,14 +5,17 @@ class LPSA {
 
 
   constructor() {
-    this._version = '0.0.1';
+    this._version = '0.0.2';
     this._mainScroll = null;
     this._asideScroll = null;
     this._dndController = null;
-    // Class internals
+    // Studied values
     this._input = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
+    // results modificators
     this._tensThreshold = 0; // Tens tolerance threshold
     this._resultsAmount = 1; // Amount of required results
+    this._precision = 75; // REesults' minimal precision
+    // Class internals
     this._db = null;
     this._perf = {
       db: { m1: null, m2: null },
@@ -62,10 +65,12 @@ class LPSA {
     document.querySelector('#t3-1').addEventListener('input', this._updateInputNumber.bind(this, '3/1'));
     document.querySelector('#t3-2').addEventListener('input', this._updateInputNumber.bind(this, '3/2'));
     document.querySelector('#t3-3').addEventListener('input', this._updateInputNumber.bind(this, '3/3'));
-    // Modificators and submission
+    // Result modificators
     document.querySelector('#aside-toggle').addEventListener('click', this._toggleAside.bind(this));
     document.querySelector('#threshold-range').addEventListener('input', this._updateThresholdRange.bind(this));
     document.querySelector('#results-range').addEventListener('input', this._updateResultsRange.bind(this));
+    document.querySelector('#precision-range').addEventListener('input', this._updatePrecisionRange.bind(this));
+    // Submission
     document.querySelector('#clear-input').addEventListener('click', this._clearInputs.bind(this));
     document.querySelector('#submit-input').addEventListener('click', this._submitInputs.bind(this));
     // Blur modal event
@@ -179,6 +184,7 @@ class LPSA {
       e.target.classList.add('error');
       setTimeout(() => e.target.classList.remove('error'), 1500);
       e.target.value = null;
+      this._input[whichInput[0] - 1][whichInput[1] - 1] = 0; // reset input value
       return;
     }
 
@@ -199,6 +205,13 @@ class LPSA {
     const value = e.target.value;
     this._resultsAmount = parseInt(value); // Save value as integer
     document.querySelector('#results-range-label').innerHTML = `Nombre de resultats ${value}`;
+  }
+
+
+  _updatePrecisionRange(e) {
+    const value = e.target.value;
+    this._precision = parseInt(value); // Save value as integer
+    document.querySelector('#precision-range-label').innerHTML = `Précision minimale : ${value}%`;
   }
 
 
@@ -282,21 +295,26 @@ class LPSA {
             //* Depending on the tolerance threshold, we can compare number of different tens according to thresh value
             const studiedTens = parseInt(`${targetArray[i].values[j][k] / 10}`[0]);
             const inputTens = parseInt(`${this._input[j][k] / 10}`[0]);
-
-            if (studiedTens === inputTens) {
-              // First use case, tens are the same, compute distance
-              distance += Math.abs(targetArray[i].values[j][k] - this._input[j][k]);
-            } else if (Math.abs(targetArray[i].values[j][k] - this._input[j][k]) <= this._tensThreshold) {
-              // Otherwise, the absolute substraction is under or equal to tolerance threshold
-              distance += Math.abs(targetArray[i].values[j][k] - this._input[j][k]);
-            } else {
-              // Candidate is not relevant as a result
+            // Don't compare valid input with db value at 0
+            if (this._input[j][k] !== 0 && targetArray[i].values[j][k] === 0) {
+              // Candidate is not relevant as a result -> do not compare input value facing a 0
               usableCandidate = false;
+            } else {
+              if (studiedTens === inputTens) {
+                // First use case, tens are the same, compute distance
+                distance += Math.abs(targetArray[i].values[j][k] - this._input[j][k]);
+              } else if (Math.abs(targetArray[i].values[j][k] - this._input[j][k]) <= this._tensThreshold) {
+                // Otherwise, the absolute substraction is under or equal to tolerance threshold
+                distance += Math.abs(targetArray[i].values[j][k] - this._input[j][k]);
+              } else {
+                // Candidate is not relevant as a result (not same tens and beyond tolerance)
+                usableCandidate = false;
+              }              
             }
           }
         }
-        // Push result to array, index will match goFor length
-        if (usableCandidate === true && distance < 100) {
+        // Push result to array only if valid, and over required precision
+        if (usableCandidate === true && distance < 100 && (100 - distance) >= this._precision) {
           outputCandidates.push({
             distance: distance,
             series: targetArray[i]
@@ -352,10 +370,11 @@ class LPSA {
           ${v[0][0]}, ${v[0][1]}, ${v[0][2]} / ${v[1][0]}, ${v[1][1]}, ${v[1][2]} / ${v[2][0]}, ${v[2][1]}, ${v[2][2]}
         `;
         container.querySelector('#study-stats').innerHTML = `
-          ${goForCandidates.length + goAgainstCandidates.length} résultat(s) trouvés dans la base de donnée.<br>
-          Ces résultats ont été trouvés en ${((this._perf.db.m2 - this._perf.db.m1) / 1000).toFixed(3)} seconde(s).<br>
-          Le nombre de résultats à afficher par catégorie est de ${this._resultsAmount}.<br>
-          La tolérance pour les calculs entre dizaines est de ${this._tensThreshold}.
+          Un total de ${goForCandidates.length + goAgainstCandidates.length} résultat(s) ont été trouvés dans la base de donnée.<br>
+          Ces résultats ont été trouvés en ${((this._perf.db.m2 - this._perf.db.m1) / 1000).toFixed(3)} seconde(s).<br><br>
+          Le nombre de résultats à afficher par catégorie est de <b>${this._resultsAmount}</b>.<br>
+          La tolérance pour les calculs entre dizaines est de <b>${this._tensThreshold}</b>.<br>
+          La précision minimale pour ces résultats est de <b>${this._precision}%</b>.
         `;
         // Update GUI with best candidates
         for (let i = 0; i < this._resultsAmount; ++i) {
