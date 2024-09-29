@@ -3,7 +3,7 @@ const path = require('path');
 const compression = require('compression');
 const zlib = require('node:zlib');
 // App and preferences
-const version = '0.0.2';
+const version = '0.0.3';
 const port = 8060;
 const app = express();
 // Log server start

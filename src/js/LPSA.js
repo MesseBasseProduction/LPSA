@@ -5,7 +5,7 @@ class LPSA {
 
 
   constructor() {
-    this._version = '0.0.2';
+    this._version = '0.0.3';
     this._mainScroll = null;
     this._asideScroll = null;
     this._dndController = null;
@@ -65,8 +65,12 @@ class LPSA {
     document.querySelector('#t3-1').addEventListener('input', this._updateInputNumber.bind(this, '3/1'));
     document.querySelector('#t3-2').addEventListener('input', this._updateInputNumber.bind(this, '3/2'));
     document.querySelector('#t3-3').addEventListener('input', this._updateInputNumber.bind(this, '3/3'));
-    // Result modificators
+    // Aside inputs
     document.querySelector('#aside-toggle').addEventListener('click', this._toggleAside.bind(this));
+    document.querySelector('#db-add').addEventListener('click', this._addDatabaseElement.bind(this));
+    document.querySelector('#db-save').addEventListener('click', this._exportDatabase.bind(this));
+    document.querySelector('#db-erase').addEventListener('click', this._clearDatabase.bind(this));
+    // Result modificators
     document.querySelector('#threshold-range').addEventListener('input', this._updateThresholdRange.bind(this));
     document.querySelector('#results-range').addEventListener('input', this._updateResultsRange.bind(this));
     document.querySelector('#precision-range').addEventListener('input', this._updatePrecisionRange.bind(this));
@@ -89,64 +93,6 @@ class LPSA {
   }
 
 
-  _fillDatabase(json) {
-    // Ensure the JSON data contains what we expect
-    if (!json.date || !json.data) {
-      window.notification.error({ message: `Le contenu de la base de donnée est mal formaté` });
-      document.getElementById('feedback-label').innerHTML = `Le fichier déposé ne contiens pas les données attentudes.`;
-      return;
-    }
-    // Clear any pevious saved db
-    window.localStorage.removeItem('session-db');
-    // Starting db creation
-    const date = new Intl.DateTimeFormat('fr', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    }).format(new Date(json.date));
-    document.getElementById('feedback-label').innerHTML = `Import de la base de donnée du ${date}...`;
-    document.getElementById('aside-content').innerHTML = ''; // Clear previous content
-    this._perf.db.m1 = performance.now();
-    for (let i = 0; i < json.data.length; ++i) {
-      const series = document.createElement('DIV');
-      series.classList.add('series');
-      series.innerHTML = `
-        <h2>Série ${json.data[i].seriesLength}/9</h2>
-        <h3>Parier <span class="go-for">Pour</span> :</h3>
-      `;
-      for (let j = 0; j < json.data[i].goFor.length; ++j) {
-        series.appendChild(this._buildElement(json.data[i].goFor[j]));
-      }
-      series.innerHTML += `<h3>Parier <span class="go-against">Contre</span></h3>`;
-      for (let j = 0; j < json.data[i].goAgainst.length; ++j) {
-        series.appendChild(this._buildElement(json.data[i].goAgainst[j]));
-      }
-      document.getElementById('aside-content').appendChild(series);
-    }
-    // Save db locally and in storage
-    this._db = json;
-    window.localStorage.setItem('session-db', JSON.stringify(this._db));
-
-    this._asideScroll = new window.ScrollBar({
-      target: document.getElementById('aside-content'),
-      minSize: 200,
-      style: {
-        color: '#758C78'
-      }
-    });
-    requestAnimationFrame(() => {
-      this._asideScroll.updateScrollbar();
-    });
-    this._perf.db.m2 = performance.now();
-    window.notification.success({ 
-      message: `Base de donnée du ${date} chargée`,
-      CBtitle: 'Voir les données',
-      callback: () => this._toggleAside()
-    });
-    document.getElementById('feedback-label').innerHTML = `Base de donnée du ${date} chargée en ${((this._perf.db.m2 - this._perf.db.m1) / 1000).toFixed(3)} seconde(s).`;
-  }
-
-
   // 
 
 
@@ -156,16 +102,26 @@ class LPSA {
     element.innerHTML = `
       <span class="value">${v[0][0]}, ${v[0][1]}, ${v[0][2]} / ${v[1][0]}, ${v[1][1]}, ${v[1][2]} / ${v[2][0]}, ${v[2][1]}, ${v[2][2]}</span>
     `;
+    // Additionnal content
     if (data.additionnal.length > 0) {
       const a = data.additionnal;
       element.innerHTML += `
         <span class="additionnal">${a[0][0]}-${a[0][1]}-${a[0][2]} / ${a[1][0]}-${a[1][1]}-${a[1][2]} / ${a[2][0]}-${a[2][1]}-${a[2][2]}</span>
       `;
+    } else {
+      element.innerHTML += `
+        <span class="additionnal">-</span>
+      `;      
     }
+    // Comment section
     if (data.comment !== '') {
       element.innerHTML += `
         <span class="comment">${data.comment}</span>
       `;
+    } else {
+      element.innerHTML += `
+        <span class="comment">-</span>
+      `;      
     }
     return element;
   };
@@ -340,21 +296,215 @@ class LPSA {
   }
 
 
+  // Local db handler (add/remove)
+
+  // Load a given JSON database into aside and into session memory
+  _fillDatabase(json) {
+    // Ensure the JSON data contains what we expect
+    if (!json.date || !json.data) {
+      window.notification.error({ message: `Le contenu de la base de donnée est mal formaté` });
+      document.getElementById('feedback-label').innerHTML = `Le fichier déposé ne contiens pas les données attentudes.`;
+      return;
+    }
+    // Clear any pevious saved db
+    window.localStorage.removeItem('session-db');
+    // Starting db creation
+    const date = new Intl.DateTimeFormat('fr', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    }).format(new Date(json.date));
+    document.getElementById('feedback-label').innerHTML = `Import de la base de donnée du ${date}...`;
+    document.getElementById('aside-content').innerHTML = ''; // Clear previous content
+    this._perf.db.m1 = performance.now();
+    for (let i = 0; i < json.data.length; ++i) {
+      const seriesFor = document.createElement('DIV');
+      seriesFor.classList.add('series');
+      seriesFor.innerHTML = `
+        <h2>Série ${json.data[i].seriesLength}/9, parier <span class="go-for">Pour</span></h2>
+      `;
+      for (let j = 0; j < json.data[i].goFor.length; ++j) {
+        const element = this._buildElement(json.data[i].goFor[j]);
+        const button = document.createElement('BUTTON');
+        button.addEventListener('click', () => {
+          this._removeDatabaseElement(i, j, 'goFor');
+        });
+        button.innerHTML = '🗑️';
+        element.appendChild(button);
+        seriesFor.appendChild(element);
+      }
+      document.getElementById('aside-content').appendChild(seriesFor);
+      let seriesAgainst = document.createElement('DIV');
+      seriesAgainst.classList.add('series');
+      seriesAgainst.innerHTML = `
+        <h2>Série ${json.data[i].seriesLength}/9, parier <span class="go-against">Contre</span></h2>
+      `;
+      for (let j = 0; j < json.data[i].goAgainst.length; ++j) {
+        const element = this._buildElement(json.data[i].goAgainst[j]);
+        const button = document.createElement('BUTTON');
+        button.addEventListener('click', () => {
+          this._removeDatabaseElement(i, j, 'goAgainst');
+        });
+        button.innerHTML = '🗑️';
+        element.appendChild(button);
+        seriesAgainst.appendChild(element);
+      }
+      document.getElementById('aside-content').appendChild(seriesAgainst);
+    }
+    // Save db locally and in storage
+    this._db = json;
+    window.localStorage.setItem('session-db', JSON.stringify(this._db));
+
+    this._asideScroll = new window.ScrollBar({
+      target: document.getElementById('aside-content'),
+      minSize: 200,
+      style: {
+        color: '#758C78'
+      }
+    });
+    requestAnimationFrame(() => {
+      this._asideScroll.updateScrollbar();
+    });
+    this._perf.db.m2 = performance.now();
+    window.notification.success({ 
+      message: `Base de donnée du ${date} chargée`,
+      CBtitle: 'Voir les données',
+      callback: () => this._toggleAside()
+    });
+    document.getElementById('feedback-label').innerHTML = `Base de donnée du ${date} chargée en ${((this._perf.db.m2 - this._perf.db.m1) / 1000).toFixed(3)} seconde(s).`;
+  }
+
+
+  _addDatabaseElement() {
+    if (this._db === null) {
+      this._db = {
+        version: '1',
+        date: `${(new Date()).toISOString().split('T')[0]}`,
+        data: JSON.parse('[{"seriesLength":4,"goFor":[],"goAgainst":[]},{"seriesLength":5,"goFor":[],"goAgainst":[]},{"seriesLength":6,"goFor":[],"goAgainst":[]},{"seriesLength":7,"goFor":[],"goAgainst":[]},{"seriesLength":8,"goFor":[],"goAgainst":[]},{"seriesLength":9,"goFor":[],"goAgainst":[]}]')
+      };
+    }
+
+    this._addElementModal();
+  }
+
+
+  _removeDatabaseElement(seriesNumber, elementNumber, type) {
+    this._db.data[seriesNumber][type].splice(elementNumber, 1);
+    this._fillDatabase(this._db);
+  }
+
+
+  _exportDatabase() {
+    if (this._db !== null) {
+      const link = document.createElement('A');
+      const data = this._db;
+      data.version = `${parseInt(this._db.version) + 1}`;
+      data.date = (new Date()).toISOString().split('T')[0];
+      const file = new Blob([JSON.stringify(data)], { type: 'text/plain' });
+      link.href = URL.createObjectURL(file);
+      link.download = `lpsa-dataset-${data.date}.json`;
+      link.click();
+    } else {
+      document.getElementById('feedback-label').innerHTML = `Aucune base de donnée à exporter.`;
+      window.notification.warning({ message: `Aucune base de donnée à exporter` });
+    }
+  }
+
+
+  _clearDatabase() {
+    if (this._db) {
+      const date = this._db.date;
+      document.getElementById('feedback-label').innerHTML = `Suppression de la base de donnée du ${date}...`;
+      document.getElementById('aside-content').innerHTML = '<i>Aucune donnée chargée en session. Veuillez glisser/déposer un fichier (.JSON) de base de donnée nimporte où sur cette page.</i>'; // Clear previous content
+      window.localStorage.removeItem('session-db');
+      this._db = null;
+      document.getElementById('feedback-label').innerHTML = `Base de donnée supprimée.`;
+      window.notification.success({ message: `Base de donnée du ${date} supprimée` });
+    } else {
+      document.getElementById('feedback-label').innerHTML = `Aucune base de donnée à supprimer.`;
+      window.notification.warning({ message: `Aucune base de donnée à supprimer` });
+    }
+  }
+
+
   // Aside viewer
 
 
   _toggleAside() {
     if (document.getElementById('bd-viewer').classList.contains('opened')) {
-      document.getElementById('aside-toggle').innerHTML = '>';
+      document.getElementById('aside-toggle').innerHTML = '&rsaquo;';
       document.getElementById('bd-viewer').classList.remove('opened');
     } else {
-      document.getElementById('aside-toggle').innerHTML = '<';
+      document.getElementById('aside-toggle').innerHTML = '&lsaquo;';
       document.getElementById('bd-viewer').classList.add('opened');
     }
   }
 
 
   // Modal related methods
+
+
+  _addElementModal() {
+    const overlay = document.getElementById('modal-overlay');
+    // Open modal event
+    fetch(`assets/html/newelementmodal.html`).then(data => {
+      overlay.style.display = 'flex';
+      data.text().then(htmlString => {
+        const container = document.createRange().createContextualFragment(htmlString);
+        overlay.appendChild(container);
+
+        overlay.querySelector('#submit-save').addEventListener('click', () => {
+          const input = [
+            [parseInt(overlay.querySelector('#v1-1').value) || 0, parseInt(overlay.querySelector('#v1-2').value) || 0, parseInt(overlay.querySelector('#v1-3').value) || 0],
+            [parseInt(overlay.querySelector('#v2-1').value) || 0, parseInt(overlay.querySelector('#v2-2').value) || 0, parseInt(overlay.querySelector('#v2-3').value) || 0],
+            [parseInt(overlay.querySelector('#v3-1').value) || 0, parseInt(overlay.querySelector('#v3-2').value) || 0, parseInt(overlay.querySelector('#v3-3').value) || 0],
+          ];
+          // Then ensure that there are more than 4 inputs filled
+          let isFilled = 0;
+          for (let i = 0; i < input.length; ++i) {
+            for (let j = 0; j < input[i].length; ++j) {
+              if (input[i][j] > 0) {
+                ++isFilled;
+              }
+            }
+          }
+          // Not enough filled data
+          if (isFilled < 4) {
+            window.notification.warning({  message: `L'indice de valeur de cette serie est inférieur a 4/9` });
+          } else {
+            const outputElement = {
+              values: input,
+              additionnal: [],
+              comment: overlay.querySelector('#comment').value
+            }
+            // Add additionnal values only if not null
+            if (parseInt(overlay.querySelector('#a1-1').value)) {
+              outputElement.additionnal = [
+                [parseInt(overlay.querySelector('#a1-1').value) || 0, parseInt(overlay.querySelector('#a1-2').value) || 0, parseInt(overlay.querySelector('#a1-3').value) || 0],
+                [parseInt(overlay.querySelector('#a2-1').value) || 0, parseInt(overlay.querySelector('#a2-2').value) || 0, parseInt(overlay.querySelector('#a2-3').value) || 0],
+                [parseInt(overlay.querySelector('#a3-1').value) || 0, parseInt(overlay.querySelector('#a3-2').value) || 0, parseInt(overlay.querySelector('#a3-3').value) || 0],
+              ];
+            }
+            // Iterate DB to append new element in proper section
+            for (let i = 0; i < this._db.data.length; ++i) {
+              if (this._db.data[i].seriesLength === isFilled) {
+                if (overlay.querySelector('#switch').checked) {
+                  this._db.data[i].goAgainst.push(outputElement);
+                } else {
+                  this._db.data[i].goFor.push(outputElement);                  
+                }
+              }
+            }
+            // Then update local database
+            this._fillDatabase(this._db);
+            this._closeModal({ srcElement: { id: 'close-button' }});
+          }
+        });
+
+        setTimeout(() => overlay.style.opacity = 1, 50);
+      });
+    }).catch(e => console.error(e));
+  }
 
 
   _resultsModal(goForCandidates, goAgainstCandidates) {
@@ -415,7 +565,6 @@ class LPSA {
           scroll.updateScrollbar();
         });
 
-        container.querySelector('#close-button').addEventListener('click', this._closeModal.bind(this));
         overlay.appendChild(container);
         setTimeout(() => overlay.style.opacity = 1, 50);
       });

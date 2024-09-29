@@ -72,21 +72,21 @@
     }
 
     button {
-      background-color: var(--color-bg);
-      border: solid 1px rgba(0, 0, 0, .2);
-      border-radius: .5rem;
-      cursor: pointer;
-      display: block;
-      margin-left: auto;
-      margin-right: auto;
-      padding: var(--spacing-small) var(--spacing);
+      height: 3.6rem;
+    }
 
-      transition: all var(--transition);
+    &.modal-new-element {
+      input.comment {
+        background-color: #fff;
+        border: 1px solid rgba(0,0,0,.15);
+        border-radius: .5rem;
+        height: 3rem;
+        outline: none;
+        text-align: center;
+        user-select: none;
+        width: 100%;
 
-      &:active,
-      &:focus,
-      &:hover {
-        background-color: var(--color-alt-2);
+        transition: all .2s;
       }
     }
 
