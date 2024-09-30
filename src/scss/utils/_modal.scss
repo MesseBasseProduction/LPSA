@@ -164,5 +164,35 @@
         }
       }    
     }
+
+    &.modal-info {
+      max-width: 66%;
+      text-align: justify;
+      width: 80rem;
+        
+      p {
+        margin-bottom: var(--spacing-small);
+        text-indent: var(--spacing);
+
+        &:last-of-type {
+          margin-bottom: 0;
+        }
+      }
+
+      a {
+        color: black;
+        display: inline-block;
+        margin: 0;
+        text-indent: 0;
+
+        transition: all var(--transition);
+
+        &:active,
+        &:focus,
+        &:hover {
+          color: var(--color-alt-1);          
+        }
+      }
+    }
   }
 }

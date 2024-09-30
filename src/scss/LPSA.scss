@@ -318,6 +318,24 @@ main {
     }
   }
 }
+
+.info-modal-button {
+  bottom: 1rem;
+  cursor: pointer;
+  opacity: .8;
+  position: absolute;
+  right: 1rem;
+  user-select: none;
+
+  transition: all .2s;
+
+  &:active,
+  &:focus,
+  &:hover {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
 /* Loader while page is being set */
 .loading-overlay {
   background-color: var(--color-bg);

@@ -78,6 +78,7 @@ class LPSA {
     document.querySelector('#clear-input').addEventListener('click', this._clearInputs.bind(this));
     document.querySelector('#submit-input').addEventListener('click', this._submitInputs.bind(this));
     // Blur modal event
+    document.querySelector('#info-modal-button').addEventListener('click', this._infoModal.bind(this));
     document.querySelector('#modal-overlay').addEventListener('click', this._closeModal.bind(this));
   }
 
