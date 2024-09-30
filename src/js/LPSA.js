@@ -5,18 +5,17 @@ class LPSA {
 
 
   constructor() {
-    this._version = '0.0.5';
-    this._mainScroll = null;
-    this._asideScroll = null;
-    this._dndController = null;
+    this._version = '0.0.6';
     // Studied values
     this._input = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
-    // results modificators
+    // Results modificators
     this._tensThreshold = 0; // Tens tolerance threshold
     this._resultsAmount = 1; // Amount of required results
-    this._precision = 75; // REesults' minimal precision
+    this._precision = 75; // Results' minimal precision
     // Class internals
-    this._db = null;
+    this._asideScroll = null; // Scrollbar inside aside
+    this._dndController = null; // Handle db drag'n'drop into UI
+    this._db = null; // Session database
     this._perf = {
       db: { m1: null, m2: null },
       analysis: { m1: null, m2: null }
@@ -332,46 +331,60 @@ class LPSA {
       seriesFor.innerHTML = `
         <h2>Série ${json.data[i].seriesLength}/9, parier <span class="go-for">Pour</span><br><i>${json.data[i].goFor.length} entrée(s)</i></h2>
       `;
-      for (let j = 0; j < json.data[i].goFor.length; ++j) {
-        const element = this._buildElement(json.data[i].goFor[j]);
-        // Edit element
-        const editButton = document.createElement('BUTTON');
-        editButton.addEventListener('click', () => {
-          this._editElementModal(i, j, 'goFor');
-        });
-        editButton.innerHTML = '✏️';
-        element.appendChild(editButton);
-        // Delete element
-        const deleteButton = document.createElement('BUTTON');
-        deleteButton.addEventListener('click', () => {
-          this._removeDatabaseElement(i, j, 'goFor');
-        });
-        deleteButton.innerHTML = '🗑️';
-        element.appendChild(deleteButton);
+      // Only iterate goFor if any, display no results otherwise
+      if (json.data[i].goFor.length) {
+        for (let j = 0; j < json.data[i].goFor.length; ++j) {
+          const element = this._buildElement(json.data[i].goFor[j]);
+          // Edit element
+          const editButton = document.createElement('BUTTON');
+          editButton.addEventListener('click', () => {
+            this._editElementModal(i, j, 'goFor');
+          });
+          editButton.innerHTML = '✏️';
+          element.appendChild(editButton);
+          // Delete element
+          const deleteButton = document.createElement('BUTTON');
+          deleteButton.addEventListener('click', () => {
+            this._removeDatabaseElement(i, j, 'goFor');
+          });
+          deleteButton.innerHTML = '🗑️';
+          element.appendChild(deleteButton);
+          seriesFor.appendChild(element);
+        }
+      } else {
+        const element = document.createElement('P');
+        element.innerHTML = 'Aucune entrée pour cette catégorie';
         seriesFor.appendChild(element);
       }
+
       document.getElementById('aside-content').appendChild(seriesFor);
       let seriesAgainst = document.createElement('DIV');
       seriesAgainst.classList.add('series');
       seriesAgainst.innerHTML = `
         <h2>Série ${json.data[i].seriesLength}/9, parier <span class="go-against">Contre</span><br><i>${json.data[i].goAgainst.length} entrée(s)</i></h2>
       `;
-      for (let j = 0; j < json.data[i].goAgainst.length; ++j) {
-        const element = this._buildElement(json.data[i].goAgainst[j]);
-        // Edit element
-        const editButton = document.createElement('BUTTON');
-        editButton.addEventListener('click', () => {
-          this._editElementModal(i, j, 'goAgainst');
-        });
-        editButton.innerHTML = '✏️';
-        element.appendChild(editButton);
-        // Delete element
-        const deleteButton = document.createElement('BUTTON');
-        deleteButton.addEventListener('click', () => {
-          this._removeDatabaseElement(i, j, 'goFor');
-        });
-        deleteButton.innerHTML = '🗑️';
-        element.appendChild(deleteButton);
+      if (json.data[i].goAgainst.length) {
+        for (let j = 0; j < json.data[i].goAgainst.length; ++j) {
+          const element = this._buildElement(json.data[i].goAgainst[j]);
+          // Edit element
+          const editButton = document.createElement('BUTTON');
+          editButton.addEventListener('click', () => {
+            this._editElementModal(i, j, 'goAgainst');
+          });
+          editButton.innerHTML = '✏️';
+          element.appendChild(editButton);
+          // Delete element
+          const deleteButton = document.createElement('BUTTON');
+          deleteButton.addEventListener('click', () => {
+            this._removeDatabaseElement(i, j, 'goAgainst');
+          });
+          deleteButton.innerHTML = '🗑️';
+          element.appendChild(deleteButton);
+          seriesAgainst.appendChild(element);
+        }
+      } else {
+        const element = document.createElement('P');
+        element.innerHTML = 'Aucune entrée pour cette catégorie';
         seriesAgainst.appendChild(element);
       }
       document.getElementById('aside-content').appendChild(seriesAgainst);
@@ -458,7 +471,6 @@ class LPSA {
 
 
   _buildDatabaseInformation(db, formattedDate) {
-    console.log(db)
     let nbElem = 0;
     for (let i = 0; i < db.data.length; ++i) {
       nbElem += db.data[i].goFor.length;
@@ -624,7 +636,11 @@ class LPSA {
               ];
             }
             // Ensure the element has changed seriesType (ie was goFor, became goAgainst)
-            if (type === 'goFor' && overlay.querySelector('#switch').checked === true || type === 'goAgainst' && overlay.querySelector('#switch').checked === false) {
+            if (
+              (type === 'goFor' && overlay.querySelector('#switch').checked === true) ||
+              (type === 'goAgainst' && overlay.querySelector('#switch').checked === false) ||
+              (seriesNumber !== isFilled)
+            ) {
               // Remove from existing series type
               this._removeDatabaseElement(seriesNumber, elementNumber, type);
               // Now push in new seriesy type
@@ -684,6 +700,10 @@ class LPSA {
             `;
             goForItem.appendChild(goForElement);
             container.querySelector('#go-for').appendChild(goForItem);
+          } else if (container.querySelector('#go-for').innerHTML === '') {
+            const element = document.createElement('P');
+            element.innerHTML = '<b>Aucun résultats pour cette catégorie</b>';
+            container.querySelector('#go-for').appendChild(element);
           }
           // Same goes for goAgainst candidates
           if (goAgainstCandidates[i]) {
@@ -695,6 +715,10 @@ class LPSA {
             `;
             goAgainstItem.appendChild(goAgainstElement);
             container.querySelector('#go-against').appendChild(goAgainstItem);
+          } else if (container.querySelector('#go-against').innerHTML === '') {
+            const element = document.createElement('P');
+            element.innerHTML = '<b>Aucun résultats pour cette catégorie</b>';
+            container.querySelector('#go-against').appendChild(element);
           }
         }
 
