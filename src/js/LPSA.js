@@ -5,7 +5,7 @@ class LPSA {
 
 
   constructor() {
-    this._version = '0.0.4';
+    this._version = '0.0.5';
     this._mainScroll = null;
     this._asideScroll = null;
     this._dndController = null;
@@ -323,6 +323,7 @@ class LPSA {
       day: 'numeric'
     }).format(new Date(json.date));
     document.getElementById('feedback-label').innerHTML = `Import de la base de donnée du ${date}...`;
+    document.getElementById('db-info').innerHTML = ''; // Clear previous content
     document.getElementById('db-info').appendChild(this._buildDatabaseInformation(json, date));
     document.getElementById('aside-content').innerHTML = ''; // Clear previous content
     for (let i = 0; i < json.data.length; ++i) {
@@ -336,7 +337,7 @@ class LPSA {
         // Edit element
         const editButton = document.createElement('BUTTON');
         editButton.addEventListener('click', () => {
-          this._editDatabaseElement(i, j, 'goFor');
+          this._editElementModal(i, j, 'goFor');
         });
         editButton.innerHTML = '✏️';
         element.appendChild(editButton);
@@ -357,12 +358,20 @@ class LPSA {
       `;
       for (let j = 0; j < json.data[i].goAgainst.length; ++j) {
         const element = this._buildElement(json.data[i].goAgainst[j]);
-        const button = document.createElement('BUTTON');
-        button.addEventListener('click', () => {
-          this._removeDatabaseElement(i, j, 'goAgainst');
+        // Edit element
+        const editButton = document.createElement('BUTTON');
+        editButton.addEventListener('click', () => {
+          this._editElementModal(i, j, 'goAgainst');
         });
-        button.innerHTML = '🗑️';
-        element.appendChild(button);
+        editButton.innerHTML = '✏️';
+        element.appendChild(editButton);
+        // Delete element
+        const deleteButton = document.createElement('BUTTON');
+        deleteButton.addEventListener('click', () => {
+          this._removeDatabaseElement(i, j, 'goFor');
+        });
+        deleteButton.innerHTML = '🗑️';
+        element.appendChild(deleteButton);
         seriesAgainst.appendChild(element);
       }
       document.getElementById('aside-content').appendChild(seriesAgainst);
@@ -400,6 +409,12 @@ class LPSA {
     }
 
     this._addElementModal();
+  }
+
+
+  _editDatabaseElement(seriesNumber, elementNumber, type, element) {
+    this._db.data[seriesNumber][type][elementNumber] = element;
+    this._fillDatabase(this._db);
   }
 
 
@@ -528,6 +543,106 @@ class LPSA {
             }
             // Then update local database
             this._fillDatabase(this._db);
+            this._closeModal({ srcElement: { id: 'close-button' }});
+          }
+        });
+
+        setTimeout(() => overlay.style.opacity = 1, 50);
+      });
+    }).catch(e => console.error(e));
+  }
+
+
+  _editElementModal(seriesNumber, elementNumber, type) {
+    const overlay = document.getElementById('modal-overlay');
+    // Open modal event
+    fetch(`assets/html/newelementmodal.html`).then(data => {
+      overlay.style.display = 'flex';
+      data.text().then(htmlString => {
+        const container = document.createRange().createContextualFragment(htmlString);
+        overlay.appendChild(container);
+        // Fill UI with saved value
+        const element = this._db.data[seriesNumber][type][elementNumber];
+
+        overlay.querySelector('#switch').checked = (type === 'goFor') ? false : true;
+        overlay.querySelector('#v1-1').value = element.values[0][0] || '';
+        overlay.querySelector('#v1-2').value = element.values[0][1] || '';
+        overlay.querySelector('#v1-3').value = element.values[0][2] || '';
+        overlay.querySelector('#v2-1').value = element.values[1][0] || '';
+        overlay.querySelector('#v2-2').value = element.values[1][1] || '';
+        overlay.querySelector('#v2-3').value = element.values[1][2] || '';
+        overlay.querySelector('#v3-1').value = element.values[2][0] || '';
+        overlay.querySelector('#v3-2').value = element.values[2][1] || '';
+        overlay.querySelector('#v3-3').value = element.values[2][2] || '';
+        // Only fill additionnal if any saved
+        if (element.additionnal.length === 3) {
+          overlay.querySelector('#a1-1').value = element.additionnal[0][0];
+          overlay.querySelector('#a1-2').value = element.additionnal[0][1];
+          overlay.querySelector('#a1-3').value = element.additionnal[0][2];
+          overlay.querySelector('#a2-1').value = element.additionnal[1][0];
+          overlay.querySelector('#a2-2').value = element.additionnal[1][1];
+          overlay.querySelector('#a2-3').value = element.additionnal[1][2];
+          overlay.querySelector('#a3-1').value = element.additionnal[2][0];
+          overlay.querySelector('#a3-2').value = element.additionnal[2][1];
+          overlay.querySelector('#a3-3').value = element.additionnal[2][2];
+        }
+        // Only update comment if any existing
+        if (element.comment !== '') {
+          overlay.querySelector('#comment').value = element.comment;
+        }
+        // Submit event listener
+        overlay.querySelector('#submit-save').addEventListener('click', () => {
+          const input = [
+            [parseInt(overlay.querySelector('#v1-1').value) || 0, parseInt(overlay.querySelector('#v1-2').value) || 0, parseInt(overlay.querySelector('#v1-3').value) || 0],
+            [parseInt(overlay.querySelector('#v2-1').value) || 0, parseInt(overlay.querySelector('#v2-2').value) || 0, parseInt(overlay.querySelector('#v2-3').value) || 0],
+            [parseInt(overlay.querySelector('#v3-1').value) || 0, parseInt(overlay.querySelector('#v3-2').value) || 0, parseInt(overlay.querySelector('#v3-3').value) || 0],
+          ];
+          // Then ensure that there are more than 4 inputs filled
+          let isFilled = 0;
+          for (let i = 0; i < input.length; ++i) {
+            for (let j = 0; j < input[i].length; ++j) {
+              if (input[i][j] > 0) {
+                ++isFilled;
+              }
+            }
+          }
+          // Not enough filled data
+          if (isFilled < 4) {
+            window.notification.warning({  message: `L'indice de valeur de cette serie est inférieur a 4/9` });
+          } else {
+            const outputElement = {
+              values: input,
+              additionnal: [],
+              comment: overlay.querySelector('#comment').value
+            }
+            // Add additionnal values only if not null
+            if (parseInt(overlay.querySelector('#a1-1').value)) {
+              outputElement.additionnal = [
+                [parseInt(overlay.querySelector('#a1-1').value) || 0, parseInt(overlay.querySelector('#a1-2').value) || 0, parseInt(overlay.querySelector('#a1-3').value) || 0],
+                [parseInt(overlay.querySelector('#a2-1').value) || 0, parseInt(overlay.querySelector('#a2-2').value) || 0, parseInt(overlay.querySelector('#a2-3').value) || 0],
+                [parseInt(overlay.querySelector('#a3-1').value) || 0, parseInt(overlay.querySelector('#a3-2').value) || 0, parseInt(overlay.querySelector('#a3-3').value) || 0],
+              ];
+            }
+            // Ensure the element has changed seriesType (ie was goFor, became goAgainst)
+            if (type === 'goFor' && overlay.querySelector('#switch').checked === true || type === 'goAgainst' && overlay.querySelector('#switch').checked === false) {
+              // Remove from existing series type
+              this._removeDatabaseElement(seriesNumber, elementNumber, type);
+              // Now push in new seriesy type
+              for (let i = 0; i < this._db.data.length; ++i) {
+                if (this._db.data[i].seriesLength === isFilled) {
+                  if (overlay.querySelector('#switch').checked) {
+                    this._db.data[i].goAgainst.push(outputElement);
+                  } else {
+                    this._db.data[i].goFor.push(outputElement);                  
+                  }
+                }
+              }
+              // Manually update db
+              this._fillDatabase(this._db);
+            } else {
+              // Edit db element (will reload db itself) and close modal
+              this._editDatabaseElement(seriesNumber, elementNumber, type, outputElement);
+            }
             this._closeModal({ srcElement: { id: 'close-button' }});
           }
         });

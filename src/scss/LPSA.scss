@@ -249,6 +249,7 @@ aside {
         &:active,
         &:focus,
         &:hover {
+          background-color: inherit;
           opacity: 1;
         }
 
