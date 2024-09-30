@@ -1,0 +1,53 @@
+<p id="aside-toggle" class="aside-toggle">&rsaquo;</p>
+<aside id="bd-viewer">
+  <h1>Base de Données</h1>
+  <div id="db-info" class="db-info"></div>
+  <div class="db-controls">
+    <button id="db-add">➕</button>
+    <button id="db-save">💾</button>
+    <button id="db-erase">🗑️</button>
+  </div>
+  <div id="aside-content" class="aside-content">
+    <i>Aucune donnée chargée en session. Veuillez glisser/déposer un fichier (.JSON) de base de donnée nimporte où sur cette page.</i>
+  </div>
+</aside>
+<main id="page-content">
+  <h1>LPSA</h1>
+  <p id="feedback-label">-</p>
+  <div class="input-wrapper">
+    <div class="triplet">
+      <input id="t1-1">
+      <input id="t1-2">
+      <input id="t1-3">
+    </div>
+    <div class="triplet">
+      <input id="t2-1">
+      <input id="t2-2">
+      <input id="t2-3">
+    </div>
+    <div class="triplet">
+      <input id="t3-1">
+      <input id="t3-2">
+      <input id="t3-3">
+    </div>
+  </div>
+  <div class="submission-wrapper">
+    <div class="ranges-container">
+      <label for="range" id="threshold-range-label">Tolérance : 0</label>
+      <input type="range" id="threshold-range" name="tolerance" min="0" max="5" value="0">
+      <label for="range" id="results-range-label">Nombre de résultats : 1</label>
+      <input type="range" id="results-range" name="results" min="1" max="20" value="1">
+      <label for="range" id="precision-range-label">Précision minimale : 75%</label>
+      <input type="range" id="precision-range" name="results" min="1" max="100" value="75">
+    </div>
+    <div class="button-container">
+      <button id="submit-input" class="primary">Rechercher</button>
+      <button id="clear-input">Effacer</button>
+    </div>
+  </div>
+</main>
+<a id="info-modal-button" class="info-modal-button">ℹ️</a>
+<div id="loading-overlay" class="loading-overlay"></div>
+<div id="modal-overlay" class="modal-overlay"></div>
+<script type="text/javascript" src="base/assets/lib/Notification.bundle.js"></script>
+<script type="text/javascript" src="base/assets/lib/ScrollBar.bundle.js"></script>
