@@ -153,6 +153,22 @@ aside {
     width: 100%;
   }
 
+  .db-info {
+    align-items: center;
+    border-bottom: solid 1px rgba(0, 0, 0, .15);
+    display: flex;
+    height: 5rem;
+    justify-content: center;
+    text-align: center;
+
+    p {
+      font-size: 1.4rem;
+      font-style: italic;
+      height: fit-content;
+      margin: 0;
+    }
+  }
+
   .db-controls {
     align-items: center;
     border-bottom: solid 1px rgba(0, 0, 0, .15);
@@ -162,8 +178,8 @@ aside {
   }
 
   .aside-content {
-    height: calc(100% - 5rem - 5rem);
-    padding: 0 1rem;
+    height: calc(100% - 5rem - 5rem - 5rem);
+    padding-left: 1rem;
     text-align: center;
     width: calc(100% - var(--scroll-size));
 
@@ -172,7 +188,6 @@ aside {
       padding-top: 1rem;
       margin-bottom: 1.5rem;
       text-align: left;
-      text-indent: 1rem;
 
       .go-for {
         color: var(--color-main-darker);
@@ -182,6 +197,11 @@ aside {
       .go-against {
         color: rgb(255, 75, 75);
         font-style: italic;
+      }
+
+      i {
+        font-style: italic;
+        margin: 0;
       }
     }
 
@@ -221,9 +241,8 @@ aside {
         border: none;
         opacity: .5;
         position: absolute;
-        right: .25rem;
         top: 0;
-        width: auto;
+        width: 2rem;
 
         transition: all .2s;
 
@@ -231,6 +250,14 @@ aside {
         &:focus,
         &:hover {
           opacity: 1;
+        }
+
+        &:first-of-type {
+          right: 2rem;
+        }
+
+        &:last-of-type {
+          right: 0rem;
         }
       }
     }

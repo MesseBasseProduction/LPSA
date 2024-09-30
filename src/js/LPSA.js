@@ -5,7 +5,7 @@ class LPSA {
 
 
   constructor() {
-    this._version = '0.0.3';
+    this._version = '0.0.4';
     this._mainScroll = null;
     this._asideScroll = null;
     this._dndController = null;
@@ -29,6 +29,9 @@ class LPSA {
         console.error(`LPSA v${this._version} : Fatal error during initialization, please contact support :\n`, err);
       });
   }
+
+
+  // Initialization sequence
 
 
   _initApp() {
@@ -55,31 +58,34 @@ class LPSA {
 
 
   _events() {
-    // Number inputs
-    document.querySelector('#t1-1').addEventListener('input', this._updateInputNumber.bind(this, '1/1'));
-    document.querySelector('#t1-2').addEventListener('input', this._updateInputNumber.bind(this, '1/2'));
-    document.querySelector('#t1-3').addEventListener('input', this._updateInputNumber.bind(this, '1/3'));
-    document.querySelector('#t2-1').addEventListener('input', this._updateInputNumber.bind(this, '2/1'));
-    document.querySelector('#t2-2').addEventListener('input', this._updateInputNumber.bind(this, '2/2'));
-    document.querySelector('#t2-3').addEventListener('input', this._updateInputNumber.bind(this, '2/3'));
-    document.querySelector('#t3-1').addEventListener('input', this._updateInputNumber.bind(this, '3/1'));
-    document.querySelector('#t3-2').addEventListener('input', this._updateInputNumber.bind(this, '3/2'));
-    document.querySelector('#t3-3').addEventListener('input', this._updateInputNumber.bind(this, '3/3'));
-    // Aside inputs
-    document.querySelector('#aside-toggle').addEventListener('click', this._toggleAside.bind(this));
-    document.querySelector('#db-add').addEventListener('click', this._addDatabaseElement.bind(this));
-    document.querySelector('#db-save').addEventListener('click', this._exportDatabase.bind(this));
-    document.querySelector('#db-erase').addEventListener('click', this._clearDatabase.bind(this));
-    // Result modificators
-    document.querySelector('#threshold-range').addEventListener('input', this._updateThresholdRange.bind(this));
-    document.querySelector('#results-range').addEventListener('input', this._updateResultsRange.bind(this));
-    document.querySelector('#precision-range').addEventListener('input', this._updatePrecisionRange.bind(this));
-    // Submission
-    document.querySelector('#clear-input').addEventListener('click', this._clearInputs.bind(this));
-    document.querySelector('#submit-input').addEventListener('click', this._submitInputs.bind(this));
-    // Blur modal event
-    document.querySelector('#info-modal-button').addEventListener('click', this._infoModal.bind(this));
-    document.querySelector('#modal-overlay').addEventListener('click', this._closeModal.bind(this));
+    return new Promise(resolve => {
+      // Number inputs
+      document.querySelector('#t1-1').addEventListener('input', this._updateInputNumber.bind(this, '1/1'));
+      document.querySelector('#t1-2').addEventListener('input', this._updateInputNumber.bind(this, '1/2'));
+      document.querySelector('#t1-3').addEventListener('input', this._updateInputNumber.bind(this, '1/3'));
+      document.querySelector('#t2-1').addEventListener('input', this._updateInputNumber.bind(this, '2/1'));
+      document.querySelector('#t2-2').addEventListener('input', this._updateInputNumber.bind(this, '2/2'));
+      document.querySelector('#t2-3').addEventListener('input', this._updateInputNumber.bind(this, '2/3'));
+      document.querySelector('#t3-1').addEventListener('input', this._updateInputNumber.bind(this, '3/1'));
+      document.querySelector('#t3-2').addEventListener('input', this._updateInputNumber.bind(this, '3/2'));
+      document.querySelector('#t3-3').addEventListener('input', this._updateInputNumber.bind(this, '3/3'));
+      // Aside inputs
+      document.querySelector('#aside-toggle').addEventListener('click', this._toggleAside.bind(this));
+      document.querySelector('#db-add').addEventListener('click', this._addDatabaseElement.bind(this));
+      document.querySelector('#db-save').addEventListener('click', this._exportDatabase.bind(this));
+      document.querySelector('#db-erase').addEventListener('click', this._clearDatabase.bind(this));
+      // Result modificators
+      document.querySelector('#threshold-range').addEventListener('input', this._updateThresholdRange.bind(this));
+      document.querySelector('#results-range').addEventListener('input', this._updateResultsRange.bind(this));
+      document.querySelector('#precision-range').addEventListener('input', this._updatePrecisionRange.bind(this));
+      // Submission
+      document.querySelector('#clear-input').addEventListener('click', this._clearInputs.bind(this));
+      document.querySelector('#submit-input').addEventListener('click', this._submitInputs.bind(this));
+      // Blur modal event
+      document.querySelector('#info-modal-button').addEventListener('click', this._infoModal.bind(this));
+      document.querySelector('#modal-overlay').addEventListener('click', this._closeModal.bind(this));
+      resolve();
+    });
   }
 
 
@@ -94,38 +100,7 @@ class LPSA {
   }
 
 
-  // 
-
-
-  _buildElement(data) {
-    const element = document.createElement('P');
-    const v = data.values;
-    element.innerHTML = `
-      <span class="value">${v[0][0]}, ${v[0][1]}, ${v[0][2]} / ${v[1][0]}, ${v[1][1]}, ${v[1][2]} / ${v[2][0]}, ${v[2][1]}, ${v[2][2]}</span>
-    `;
-    // Additionnal content
-    if (data.additionnal.length > 0) {
-      const a = data.additionnal;
-      element.innerHTML += `
-        <span class="additionnal">${a[0][0]}-${a[0][1]}-${a[0][2]} / ${a[1][0]}-${a[1][1]}-${a[1][2]} / ${a[2][0]}-${a[2][1]}-${a[2][2]}</span>
-      `;
-    } else {
-      element.innerHTML += `
-        <span class="additionnal">-</span>
-      `;      
-    }
-    // Comment section
-    if (data.comment !== '') {
-      element.innerHTML += `
-        <span class="comment">${data.comment}</span>
-      `;
-    } else {
-      element.innerHTML += `
-        <span class="comment">-</span>
-      `;      
-    }
-    return element;
-  };
+  // Input callbacks
 
 
   _updateInputNumber(inputString, e) {
@@ -297,6 +272,37 @@ class LPSA {
   }
 
 
+  _buildElement(data) {
+    const element = document.createElement('P');
+    const v = data.values;
+    element.innerHTML = `
+      <span class="value">${v[0][0]}, ${v[0][1]}, ${v[0][2]} / ${v[1][0]}, ${v[1][1]}, ${v[1][2]} / ${v[2][0]}, ${v[2][1]}, ${v[2][2]}</span>
+    `;
+    // Additionnal content
+    if (data.additionnal.length > 0) {
+      const a = data.additionnal;
+      element.innerHTML += `
+        <span class="additionnal">${a[0][0]}-${a[0][1]}-${a[0][2]} / ${a[1][0]}-${a[1][1]}-${a[1][2]} / ${a[2][0]}-${a[2][1]}-${a[2][2]}</span>
+      `;
+    } else {
+      element.innerHTML += `
+        <span class="additionnal">-</span>
+      `;      
+    }
+    // Comment section
+    if (data.comment !== '') {
+      element.innerHTML += `
+        <span class="comment">${data.comment}</span>
+      `;
+    } else {
+      element.innerHTML += `
+        <span class="comment">-</span>
+      `;      
+    }
+    return element;
+  };
+
+
   // Local db handler (add/remove)
 
   // Load a given JSON database into aside and into session memory
@@ -307,6 +313,7 @@ class LPSA {
       document.getElementById('feedback-label').innerHTML = `Le fichier déposé ne contiens pas les données attentudes.`;
       return;
     }
+    this._perf.db.m1 = performance.now();
     // Clear any pevious saved db
     window.localStorage.removeItem('session-db');
     // Starting db creation
@@ -316,29 +323,37 @@ class LPSA {
       day: 'numeric'
     }).format(new Date(json.date));
     document.getElementById('feedback-label').innerHTML = `Import de la base de donnée du ${date}...`;
+    document.getElementById('db-info').appendChild(this._buildDatabaseInformation(json, date));
     document.getElementById('aside-content').innerHTML = ''; // Clear previous content
-    this._perf.db.m1 = performance.now();
     for (let i = 0; i < json.data.length; ++i) {
       const seriesFor = document.createElement('DIV');
       seriesFor.classList.add('series');
       seriesFor.innerHTML = `
-        <h2>Série ${json.data[i].seriesLength}/9, parier <span class="go-for">Pour</span></h2>
+        <h2>Série ${json.data[i].seriesLength}/9, parier <span class="go-for">Pour</span><br><i>${json.data[i].goFor.length} entrée(s)</i></h2>
       `;
       for (let j = 0; j < json.data[i].goFor.length; ++j) {
         const element = this._buildElement(json.data[i].goFor[j]);
-        const button = document.createElement('BUTTON');
-        button.addEventListener('click', () => {
+        // Edit element
+        const editButton = document.createElement('BUTTON');
+        editButton.addEventListener('click', () => {
+          this._editDatabaseElement(i, j, 'goFor');
+        });
+        editButton.innerHTML = '✏️';
+        element.appendChild(editButton);
+        // Delete element
+        const deleteButton = document.createElement('BUTTON');
+        deleteButton.addEventListener('click', () => {
           this._removeDatabaseElement(i, j, 'goFor');
         });
-        button.innerHTML = '🗑️';
-        element.appendChild(button);
+        deleteButton.innerHTML = '🗑️';
+        element.appendChild(deleteButton);
         seriesFor.appendChild(element);
       }
       document.getElementById('aside-content').appendChild(seriesFor);
       let seriesAgainst = document.createElement('DIV');
       seriesAgainst.classList.add('series');
       seriesAgainst.innerHTML = `
-        <h2>Série ${json.data[i].seriesLength}/9, parier <span class="go-against">Contre</span></h2>
+        <h2>Série ${json.data[i].seriesLength}/9, parier <span class="go-against">Contre</span><br><i>${json.data[i].goAgainst.length} entrée(s)</i></h2>
       `;
       for (let j = 0; j < json.data[i].goAgainst.length; ++j) {
         const element = this._buildElement(json.data[i].goAgainst[j]);
@@ -355,7 +370,7 @@ class LPSA {
     // Save db locally and in storage
     this._db = json;
     window.localStorage.setItem('session-db', JSON.stringify(this._db));
-
+    // Create scrollbar for aside's content
     this._asideScroll = new window.ScrollBar({
       target: document.getElementById('aside-content'),
       minSize: 200,
@@ -363,9 +378,8 @@ class LPSA {
         color: '#758C78'
       }
     });
-    requestAnimationFrame(() => {
-      this._asideScroll.updateScrollbar();
-    });
+    // Ensure aside's content is rendered with RAF before asking for an update
+    requestAnimationFrame(this._asideScroll.updateScrollbar.bind(this._asideScroll));
     this._perf.db.m2 = performance.now();
     window.notification.success({ 
       message: `Base de donnée du ${date} chargée`,
@@ -425,6 +439,22 @@ class LPSA {
       document.getElementById('feedback-label').innerHTML = `Aucune base de donnée à supprimer.`;
       window.notification.warning({ message: `Aucune base de donnée à supprimer` });
     }
+  }
+
+
+  _buildDatabaseInformation(db, formattedDate) {
+    console.log(db)
+    let nbElem = 0;
+    for (let i = 0; i < db.data.length; ++i) {
+      nbElem += db.data[i].goFor.length;
+      nbElem += db.data[i].goAgainst.length;
+    }
+    const container = document.createElement('P');
+    container.innerHTML = `
+      ${formattedDate} (version ${db.version})<br>
+      ${nbElem} entrée(s) en base
+    `;
+    return container;
   }
 
 
@@ -581,6 +611,7 @@ class LPSA {
       data.text().then(htmlString => {
         const container = document.createRange().createContextualFragment(htmlString);
         overlay.appendChild(container);
+        overlay.querySelector('#app-version').innerHTML = this._version;
         setTimeout(() => overlay.style.opacity = 1, 50);
       });
     }).catch(e => console.error(e));
