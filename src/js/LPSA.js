@@ -536,7 +536,7 @@ class LPSA {
               comment: overlay.querySelector('#comment').value
             }
             // Add additionnal values only if not null
-            if (parseInt(overlay.querySelector('#a1-1').value)) {
+            if (!isNaN(parseInt(overlay.querySelector('#a1-1').value))) {
               outputElement.additionnal = [
                 [parseInt(overlay.querySelector('#a1-1').value) || 0, parseInt(overlay.querySelector('#a1-2').value) || 0, parseInt(overlay.querySelector('#a1-3').value) || 0],
                 [parseInt(overlay.querySelector('#a2-1').value) || 0, parseInt(overlay.querySelector('#a2-2').value) || 0, parseInt(overlay.querySelector('#a2-3').value) || 0],
@@ -628,7 +628,7 @@ class LPSA {
               comment: overlay.querySelector('#comment').value
             }
             // Add additionnal values only if not null
-            if (parseInt(overlay.querySelector('#a1-1').value)) {
+            if (!isNaN(parseInt(overlay.querySelector('#a1-1').value))) {
               outputElement.additionnal = [
                 [parseInt(overlay.querySelector('#a1-1').value) || 0, parseInt(overlay.querySelector('#a1-2').value) || 0, parseInt(overlay.querySelector('#a1-3').value) || 0],
                 [parseInt(overlay.querySelector('#a2-1').value) || 0, parseInt(overlay.querySelector('#a2-2').value) || 0, parseInt(overlay.querySelector('#a2-3').value) || 0],

@@ -24,13 +24,6 @@
   --color-fg: #181818;
 }
 
-/* Define custom font */
-@font-face {
-  font-family: 'Tangerine';
-  src: url('../../assets/font/Tangerine_Regular.ttf') format('truetype'),
-    url('../../assets/font/Tangerine_Regular.woff') format('woff');
-}
-
 @keyframes rotate-plane {
   0% {
     transform: perspective(120px) rotateX(0deg) rotateY(0deg);
