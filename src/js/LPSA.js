@@ -1,5 +1,11 @@
 import '../scss/LPSA.scss';
 import DnD from './utils/DnD';
+import Notification from './utils/Notification';
+import ScrollBar from './utils/ScrollBar';
+
+
+window.notification = new Notification();
+
 
 class LPSA {
 
@@ -101,7 +107,7 @@ class LPSA {
         if (db !== null) {
           this._fillDatabase(JSON.parse(db));
         }
-        resolve();        
+        resolve();
       } catch (error) {
         reject(error);
       }
@@ -132,7 +138,7 @@ class LPSA {
         document.querySelector('#t3-3').addEventListener('input', this._updateInputNumber.bind(this, '2/2'));
         // Aside inputs
         document.querySelector('#aside-toggle').addEventListener('click', this._toggleAside.bind(this));
-        document.querySelector('#db-add').addEventListener('click', this._addDatabaseElement.bind(this));
+        document.querySelector('#db-add').addEventListener('click', this._requestNewElement.bind(this));
         document.querySelector('#db-save').addEventListener('click', this._exportDatabase.bind(this));
         document.querySelector('#db-erase').addEventListener('click', this._clearDatabaseModal.bind(this));
         // Result modificators
@@ -145,7 +151,7 @@ class LPSA {
         // Blur modal event
         document.querySelector('#info-button').addEventListener('click', this._infoModal.bind(this));
         document.querySelector('#modal-overlay').addEventListener('click', this._closeModal.bind(this));
-        resolve();        
+        resolve();
       } catch (error) {
         reject(error);
       }
@@ -203,7 +209,7 @@ class LPSA {
    * @memberof LPSA
    * @description <blockquote>
    * Callback method to update a given input either visually and in internal value.
-   * </blockquote> 
+   * </blockquote>
    * @param {String} inputString - The input position formatted x/y, x being the triplet number and y being the inpus position in triplet
    * @param {Event} e - The associated input event */
   _updateInputNumber(inputString, e) {
@@ -384,7 +390,7 @@ class LPSA {
     this._db = json;
     window.localStorage.setItem('session-db', JSON.stringify(this._db));
     // Create scrollbar for aside's content
-    this._asideScroll = new window.ScrollBar({
+    this._asideScroll = new ScrollBar({
       target: document.getElementById('aside-content'),
       minSize: 200,
       style: {
@@ -396,7 +402,7 @@ class LPSA {
     // Measure db filling performances (ending point)
     this._perf.db.m2 = performance.now();
     // Notify user in UI that everything is set
-    window.notification.success({ 
+    window.notification.success({
       message: `Base de donnée du ${date} chargée`,
       CBtitle: 'Voir les données',
       callback: () => this._toggleAside()
@@ -524,7 +530,7 @@ class LPSA {
     } else {
       element.innerHTML += `
         <span class="additionnal">-</span>
-      `;      
+      `;
     }
     // Comment section
     if (data.comment !== '') {
@@ -534,7 +540,7 @@ class LPSA {
     } else {
       element.innerHTML += `
         <span class="comment">-</span>
-      `;      
+      `;
     }
     return element;
   }
@@ -545,9 +551,24 @@ class LPSA {
    * @static
    * @memberof LPSA
    * @description <blockquote>
+   * Append a given entry into the session database.
+   * </blockquote>
+   * @param {Number} index - The series index in database
+   * @param {String} type - The element type in goFor' or 'goAgainst'
+   * @param {Object} element - The to add in database */
+  _addDatabaseElement(index, type, element) {
+    this._db.data[index][type].push(element);
+  }
+
+
+  /** @method
+   * @name _requestNewElement
+   * @static
+   * @memberof LPSA
+   * @description <blockquote>
    * Callback method to open the new element database entry modal. It will create a default database if there isn't one already defined.
    * </blockquote> */
-  _addDatabaseElement() {
+   _requestNewElement() {
     // if no db, create an empty one to element addition doesn't automatically fails
     if (this._db === null) {
       this._db = {
@@ -676,7 +697,7 @@ class LPSA {
     this._resultsModal(goForCandidates, goAgainstCandidates);
     // Search completed
     this._perf.analysis.m2 = performance.now();
-    window.notification.success({ 
+    window.notification.success({
       message: `Analyse des données terminée`
     });
     document.getElementById('feedback-label').innerHTML = `Analyse de la serie terminée :  ${goForCandidates.length + goAgainstCandidates.length} résultat(s).`;
@@ -689,7 +710,7 @@ class LPSA {
    * @memberof LPSA
    * @description <blockquote>
    * Auxilliary method for <code>_performInputAnalysis</code> which computes the candidates for a given input according to user's criterias set through range sliders.
-   * </blockquote> 
+   * </blockquote>
    * @param {Array<Object>} targetArray - The target array to compare input with.
    * @returns {Array<Object>} An array containing all candidates database entries which met the filtering criterias */
   __computeCandidates(targetArray) {
@@ -720,7 +741,7 @@ class LPSA {
             } else {
               // Candidate is not relevant as a result (not same tens and beyond tolerance)
               usableCandidate = false;
-            }              
+            }
           }
         }
       }
@@ -792,9 +813,9 @@ class LPSA {
             for (let i = 0; i < this._db.data.length; ++i) {
               if (this._db.data[i].seriesLength === isFilled) {
                 if (overlay.querySelector('#switch').checked) {
-                  this._db.data[i].goAgainst.push(outputElement);
+                  this._addDatabaseElement(i, 'goAgainst', outputElement);
                 } else {
-                  this._db.data[i].goFor.push(outputElement);                  
+                  this._addDatabaseElement(i, 'goFor', outputElement);
                 }
               }
             }
@@ -816,7 +837,7 @@ class LPSA {
    * @memberof LPSA
    * @description <blockquote>
    * Displays the edit element modal, and handle its event to edit the element in the database if the input is valid.
-   * </blockquote> 
+   * </blockquote>
    * @param {Number} seriesNumber - The element associated series number
    * @param {Number} elementNumber - The element associated number in the series
    * @param {String} type - The element type ; either goFor' or 'goAgainst' */
@@ -904,7 +925,7 @@ class LPSA {
                   if (overlay.querySelector('#switch').checked) {
                     this._db.data[i].goAgainst.push(outputElement);
                   } else {
-                    this._db.data[i].goFor.push(outputElement);                  
+                    this._db.data[i].goFor.push(outputElement);
                   }
                 }
               }
@@ -930,7 +951,7 @@ class LPSA {
    * @memberof LPSA
    * @description <blockquote>
    * Displays the results modal with all provided candidates, sorted by confidence and for each types
-   * </blockquote> 
+   * </blockquote>
    * @param {Array<Object>} goForCandidates - The candidates elements for 'goFor' type
    * @param {Array<Object>} goAgainstCandidates - The candidates elements for 'goAgainst' type */
   _resultsModal(goForCandidates, goAgainstCandidates) {
@@ -986,7 +1007,7 @@ class LPSA {
           }
         }
 
-        const scroll = new window.ScrollBar({
+        const scroll = new ScrollBar({
           target: container.querySelector('.results-wrapper'),
           minSize: 200,
           style: {
@@ -1067,8 +1088,8 @@ class LPSA {
    * @memberof LPSA
    * @description <blockquote>
    * Method to request a modal closure.
-   * </blockquote> 
-   * @param {Event} e - The associated click event */
+   * </blockquote>
+   * @param {vent} e - The associated click event */
   _closeModal(e) {
     if (e.srcElement.id !== 'modal-overlay' && e.srcElement.className !== 'close-modal' && e.srcElement.id !== 'close-button') {
       return;

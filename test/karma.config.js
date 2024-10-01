@@ -18,8 +18,7 @@ module.exports = config => {
       'test/testContext.js',
       'test/testStyle.css',
       'test/templates/index.html',
-      { pattern: 'assets/lib/*.css', included: false, served: true },
-      { pattern: 'assets/lib/*.js', included: false, served: true }
+      { pattern: 'assets/dist/*.css', included: false, served: true }
     ],
     reporters: ['kjhtml', 'progress'],
     preprocessors: {

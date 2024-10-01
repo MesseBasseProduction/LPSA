@@ -111,11 +111,11 @@ button {
         width: 1.6rem;
         transition: all .3s ease-in-out;
       }
-      
+
       &:checked {
         background-color: rgb(86, 212, 91);
       }
-      
+
       &:checked::after {
         left: calc(100% - 1.6rem);
       }
