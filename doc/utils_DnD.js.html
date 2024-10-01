@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: utils/DnD.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: utils/DnD.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>class DnD {
+
+
+  /** @summary &lt;h1>A DnD simple implementation to convert any DOM element into a drop content handler&lt;/h1>
+   * @author Arthur Beaulieu
+   * @since March 2019
+   * @description &lt;blockquote>This class aims to propose a drag and drop abstraction, so you can focus on the dropped content handling only.
+   * Instantiate this with a DOM target, and a file handler callback in which you might do your treatments with the dropped file(s).&lt;/blockquote>
+   * @param {Object} options - The DnD class arguments object
+   * @param {String} options.target - The DnD target DOM element query selector
+   * @param {Function} options.onDropFile - The callback to call when a file is handled */
+  constructor(options) {
+    try {
+      /** @private
+       * @member {Object} - The DnD container DOM node */
+      this._container = document.querySelector(options.target); // Get given target from the DOM
+      /** @private
+       * @member {Function} - The file handler callback */
+      this._onDropFileCB = options.onDropFile; // Assign the onDropFile callback to an internal
+      /** @private
+       * @member {String} - The target default border rule (to properly restor border on leave/end) */
+      this._borderStyle = this._container.style.border; // Back target border style to restore it on leave/drop events
+      this._events(); // Attach all drag events
+    } catch(error) { // Mostly handle the case in which the target selector given as an argument is wrong
+      console.error(`Unable to build the DnD class.\n${error}`);
+    }
+  }
+
+
+  /** @method
+   * @name formatAsJSON
+   * @static
+   * @memberof DnD
+   * @description &lt;blockquote>Convert a raw dropped content into a JSON object&lt;/blockquote> */
+  static formatAsJSON(raw) {
+    return JSON.parse(raw);
+  }
+
+
+  /** @method
+   * @name _events
+   * @private
+   * @memberof DnD
+   * @description &lt;blockquote>Attach to the container all the needed drag/drop events&lt;/blockquote> */
+  _events() {
+    this._container.addEventListener('dragenter', this._dragEnter.bind(this), false);
+    this._container.addEventListener('dragover', this._dragOver.bind(this), false);
+    this._container.addEventListener('dragleave', this._dragLeave.bind(this), false);
+    this._container.addEventListener('drop', this._drop.bind(this), false);
+  }
+
+
+  /** @method
+   * @name _eventBehavior
+   * @private
+   * @memberof DnD
+   * @description &lt;blockquote>Stops the given event propagation and default behavior&lt;/blockquote>
+   * @param {Event} event - The event to change behavior from */
+  _eventBehavior(event) {
+    event.stopPropagation();
+    event.preventDefault();
+  }
+
+
+  /** @method
+   * @name _dragEnter
+   * @private
+   * @memberof DnD
+   * @description &lt;blockquote>User entered the target div with a dragged content under mouse&lt;/blockquote>
+   * @param {Event} event - The event to handle */
+  _dragEnter(event) {
+    this._eventBehavior(event);
+    this._container.style.border = 'dashed 6px rgb(255, 100, 100)';
+  }
+
+
+  /** @method
+   * @name _dragOver
+   * @private
+   * @memberof DnD
+   * @description &lt;blockquote>User hovers the target div with a dragged content under mouse&lt;/blockquote>
+   * @param {Event} event - The event to handle */
+  _dragOver(event) {
+    this._eventBehavior(event);
+    event.dataTransfer.dropEffect = 'copy';
+  }
+
+
+  /** @method
+   * @name _dragLeave
+   * @private
+   * @memberof DnD
+   * @description &lt;blockquote>User left the target div with a dragged content under mouse&lt;/blockquote>
+   * @param {Event} event - The event to handle */
+  _dragLeave(event) {
+    if (event.relatedTarget === null) {
+      this._eventBehavior(event);
+      this._container.style.border = this._borderStyle;
+    }
+  }
+
+
+  /** @method
+   * @name _drop
+   * @private
+   * @memberof DnD
+   * @description &lt;blockquote>User dropped content on the target div&lt;/blockquote>
+   * @param {Event} event - The event to handle */
+  _drop(event) {
+    this._eventBehavior(event);
+    this._container.style.border = this._borderStyle;
+
+    const files = event.dataTransfer.files;
+    for (let i = 0; i &lt; files.length; ++i) {
+      const reader = new FileReader();
+      reader.onload = (theFile => {
+        return raw => {
+          this._onDropFileCB(theFile, raw);
+        };
+      })(files[i]);
+      reader.readAsText(files[i]);
+    }
+  }
+}
+
+
+export default DnD;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="DnD.html">DnD</a></li><li><a href="LPSA.html">LPSA</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.3</a> on Tue Oct 01 2024 11:34:13 GMT+0200 (Central European Summer Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

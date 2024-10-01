@@ -1,21 +1,49 @@
-import '../scss/LPSA.scss';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: LPSA.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: LPSA.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import '../scss/LPSA.scss';
 import DnD from './utils/DnD';
 
 class LPSA {
 
 
-  /** @summary <h1>The global LPSA application class, which handles both UI, modelisation and computing.</h1>
+  /** @summary &lt;h1>The global LPSA application class, which handles both UI, modelisation and computing.&lt;/h1>
    * @author Arthur Beaulieu
    * @since September 2024
-   * @description <blockquote>
+   * @description &lt;blockquote>
    * Providing the whole UI structure and events, so user can interact and performs the following :
-   * <ul>
-   *   <li>manage session database (load database, add entry, edit entry, delete entry, export databse, clear database) ;</li>
-   *   <li>provide input values to compare against the loaded database (additionnal controls over results amounts, precision threshold and tolerance threshold) ;</li>
-   *   <li>matching results displayed in order with confidence index.</li>
-   * </ul>
+   * &lt;ul>
+   *   &lt;li>manage session database (load database, add entry, edit entry, delete entry, export databse, clear database) ;&lt;/li>
+   *   &lt;li>provide input values to compare against the loaded database (additionnal controls over results amounts, precision threshold and tolerance threshold) ;&lt;/li>
+   *   &lt;li>matching results displayed in order with confidence index.&lt;/li>
+   * &lt;/ul>
    * For confidentiality purpose, no other spec will be defined.
-   * </blockquote> */
+   * &lt;/blockquote> */
   constructor() {
     /** @private
      * @member {String} - The LPSA application version */
@@ -23,7 +51,7 @@ class LPSA {
 
     // ----- Studied values
     /** @private
-     * @member {Array<Array<Number>>} - The sutied user input to compare against loaded database */
+     * @member {Array&lt;Array&lt;Number>>} - The sutied user input to compare against loaded database */
     this._input = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
 
     // ----- Results modificators
@@ -75,10 +103,10 @@ class LPSA {
    * @name _initApp
    * @static
    * @memberof LPSA
-   * @description <blockquote>
-   * Initializes the drag and drop controller over the <main> DOM element, and tries to load a database stored in the local storage.
+   * @description &lt;blockquote>
+   * Initializes the drag and drop controller over the &lt;main> DOM element, and tries to load a database stored in the local storage.
    * If any databse is stored, it will be loaded in session and the aside will be filled with its data.
-   * </blockquote>
+   * &lt;/blockquote>
    * @returns {Promise} Promise that is resolved if DnD controller is properly initialized, rejected otherwise */
   _initApp() {
     return new Promise((resolve, reject) => {
@@ -113,9 +141,9 @@ class LPSA {
    * @name _events
    * @static
    * @memberof LPSA
-   * @description <blockquote>
+   * @description &lt;blockquote>
    * Allow every user interaction by listening to DOM events on specific UI elements.
-   * </blockquote>
+   * &lt;/blockquote>
    * @returns {Promise} Promise that is resolved if all events are listened, rejected otherwise */
   _events() {
     return new Promise((resolve, reject) => {
@@ -157,9 +185,9 @@ class LPSA {
    * @name _finalizeInit
    * @static
    * @memberof LPSA
-   * @description <blockquote>
+   * @description &lt;blockquote>
    * Removes the loading overlay so that the app become visible and usable.
-   * </blockquote>
+   * &lt;/blockquote>
    * @returns {Promise} Promise that is resolved when view is ready, rejected otherwise */
   _finalizeInit() {
     return new Promise((resolve, reject) => {
@@ -183,15 +211,15 @@ class LPSA {
    * @name _toggleAside
    * @static
    * @memberof LPSA
-   * @description <blockquote>
+   * @description &lt;blockquote>
    * Either opens or closes the aside displaying the database values, depending of its current expand/collapse state.
-   * </blockquote> */
+   * &lt;/blockquote> */
   _toggleAside() {
     if (document.getElementById('bd-viewer').classList.contains('opened')) {
-      document.getElementById('aside-toggle').innerHTML = '&rsaquo;';
+      document.getElementById('aside-toggle').innerHTML = '&amp;rsaquo;';
       document.getElementById('bd-viewer').classList.remove('opened');
     } else {
-      document.getElementById('aside-toggle').innerHTML = '&lsaquo;';
+      document.getElementById('aside-toggle').innerHTML = '&amp;lsaquo;';
       document.getElementById('bd-viewer').classList.add('opened');
     }
   }
@@ -201,9 +229,9 @@ class LPSA {
    * @name _updateInputNumber
    * @static
    * @memberof LPSA
-   * @description <blockquote>
+   * @description &lt;blockquote>
    * Callback method to update a given input either visually and in internal value.
-   * </blockquote> 
+   * &lt;/blockquote> 
    * @param {String} inputString - The input position formatted x/y, x being the triplet number and y being the inpus position in triplet
    * @param {Event} e - The associated input event */
   _updateInputNumber(inputString, e) {
@@ -236,9 +264,9 @@ class LPSA {
    * @name _updateThresholdRange
    * @static
    * @memberof LPSA
-   * @description <blockquote>
+   * @description &lt;blockquote>
    * Callback method to update the tens tolerance for analysis results.
-   * </blockquote>
+   * &lt;/blockquote>
    * @param {Event} e - The associated input event */
   _updateThresholdRange(e) {
     const value = e.target.value;
@@ -251,9 +279,9 @@ class LPSA {
    * @name _updateResultsRange
    * @static
    * @memberof LPSA
-   * @description <blockquote>
+   * @description &lt;blockquote>
    * Callback method to update the amount of wanted results.
-   * </blockquote>
+   * &lt;/blockquote>
    * @param {Event} e - The associated input event */
   _updateResultsRange(e) {
     const value = e.target.value;
@@ -266,9 +294,9 @@ class LPSA {
    * @name _updatePrecisionRange
    * @static
    * @memberof LPSA
-   * @description <blockquote>
+   * @description &lt;blockquote>
    * Callback method to update the minimal required precision for results.
-   * </blockquote>
+   * &lt;/blockquote>
    * @param {Event} e - The associated input event */
   _updatePrecisionRange(e) {
     const value = e.target.value;
@@ -281,9 +309,9 @@ class LPSA {
    * @name _clearInputs
    * @static
    * @memberof LPSA
-   * @description <blockquote>
+   * @description &lt;blockquote>
    * Callback method to clear all inputs content.
-   * </blockquote>
+   * &lt;/blockquote>
    * @param {Event} e - The associated click event */
   _clearInputs(e) {
     // Clear inputs
@@ -308,9 +336,9 @@ class LPSA {
    * @name _submitInputs
    * @static
    * @memberof LPSA
-   * @description <blockquote>
+   * @description &lt;blockquote>
    * Callback method to submit given inputs for analysis.
-   * </blockquote>
+   * &lt;/blockquote>
    * @param {Event} e - The associated click event */
   _submitInputs(e) {
     // Ensure a db has been dropped first
@@ -322,15 +350,15 @@ class LPSA {
     }
     // Then ensure that there are more than 4 inputs filled
     let isFilled = 0;
-    for (let i = 0; i < this._input.length; ++i) {
-      for (let j = 0; j < this._input[i].length; ++j) {
+    for (let i = 0; i &lt; this._input.length; ++i) {
+      for (let j = 0; j &lt; this._input[i].length; ++j) {
         if (this._input[i][j] > 0) {
           ++isFilled;
         }
       }
     }
     // Not enough filled data
-    if (isFilled < 4) {
+    if (isFilled &lt; 4) {
       window.notification.warning({ message: `L'indice de valeur de cette serie est inférieur a 4/9` });
       document.getElementById('feedback-label').innerHTML = `Cette serie comporte moins de 4/9 valeurs et n'est pas pertinente à analyser.`;
       e.target.blur();
@@ -348,9 +376,9 @@ class LPSA {
    * @name _fillDatabase
    * @static
    * @memberof LPSA
-   * @description <blockquote>
+   * @description &lt;blockquote>
    * With provided JSON, this method will fill the session database internally and will update the UI aside with this database.
-   * </blockquote>
+   * &lt;/blockquote>
    * @param {Object} json - The database as parsed JSON, must comply with a format that won't be detailled here */
   _fillDatabase(json) {
     // Ensure the JSON data contains what we expect
@@ -374,7 +402,7 @@ class LPSA {
     document.getElementById('feedback-label').innerHTML = `Import de la base de donnée du ${date}...`;
     document.getElementById('db-info').appendChild(this.__buildDatabaseInformation(json, date));
     // Iterate database to fill series
-    for (let i = 0; i < json.data.length; ++i) {
+    for (let i = 0; i &lt; json.data.length; ++i) {
       const goFor = this.__buildDatabaseSeries(json.data[i], 'goFor', i);
       document.getElementById('aside-content').appendChild(goFor);
       const goAgainst = this.__buildDatabaseSeries(json.data[i], 'goAgainst', i);
@@ -409,21 +437,21 @@ class LPSA {
    * @name __buildDatabaseInformation
    * @static
    * @memberof LPSA
-   * @description <blockquote>
-   * Auxilliary method for <code>_fillDatabase</code> which returns a DOM object containing useful information about the database.
-   * </blockquote>
+   * @description &lt;blockquote>
+   * Auxilliary method for &lt;code>_fillDatabase&lt;/code> which returns a DOM object containing useful information about the database.
+   * &lt;/blockquote>
    * @param {Object} db - The database as parsed JSON, must comply with a format that won't be detailled here
    * @param {String} formattedDate - A formatted date as a string
    * @returns {Object} A DOM element containing database useful information */
   __buildDatabaseInformation(db, formattedDate) {
     let nbElem = 0;
-    for (let i = 0; i < db.data.length; ++i) {
+    for (let i = 0; i &lt; db.data.length; ++i) {
       nbElem += db.data[i].goFor.length;
       nbElem += db.data[i].goAgainst.length;
     }
     const container = document.createElement('P');
     container.innerHTML = `
-      ${formattedDate} (version ${db.version})<br>
+      ${formattedDate} (version ${db.version})&lt;br>
       ${nbElem} entrée(s) en base
     `;
     return container;
@@ -434,9 +462,9 @@ class LPSA {
    * @name __buildDatabaseSeries
    * @static
    * @memberof LPSA
-   * @description <blockquote>
-   * Auxilliary method for <code>_fillDatabase</code> which returns a DOM object containing all information of a given data series.
-   * </blockquote>
+   * @description &lt;blockquote>
+   * Auxilliary method for &lt;code>_fillDatabase&lt;/code> which returns a DOM object containing all information of a given data series.
+   * &lt;/blockquote>
    * @param {Object} data - The database as parsed JSON, must comply with a format that won't be detailled here
    * @param {String} type - Either 'goFor' or 'goAgainst' to specify which series is built here
    * @param {String} i - The series' index, mostly used for edit/remove entry callback
@@ -446,7 +474,7 @@ class LPSA {
     const series = document.createElement('DIV');
     series.classList.add('series');
     series.innerHTML = `
-      <h2>Série ${data.seriesLength}/9, parier <span class="go-${type.substring(2).toLowerCase()}">${type === 'goFor' ? 'Pour' : 'Contre'}</span><br><i>${data[type].length} entrée(s)</i></h2>
+      &lt;h2>Série ${data.seriesLength}/9, parier &lt;span class="go-${type.substring(2).toLowerCase()}">${type === 'goFor' ? 'Pour' : 'Contre'}&lt;/span>&lt;br>&lt;i>${data[type].length} entrée(s)&lt;/i>&lt;/h2>
     `;
     // Create expander/collapser for studied series
     const expandCollapse = document.createElement('DIV');
@@ -456,7 +484,7 @@ class LPSA {
     const seriesContainer = document.createElement('DIV');
     // Only iterate entries if any, display no results otherwise
     if (data[type].length) {
-      for (let j = 0; j < data[type].length; ++j) {
+      for (let j = 0; j &lt; data[type].length; ++j) {
         // Build databse element
         const element = this._buildDatabaseElement(data[type][j]);
         // Edit element
@@ -504,36 +532,36 @@ class LPSA {
    * @name _buildDatabaseElement
    * @static
    * @memberof LPSA
-   * @description <blockquote>
+   * @description &lt;blockquote>
    * Generic method which returns a DOM object containing a database element.
-   * </blockquote>
+   * &lt;/blockquote>
    * @param {Object} data - A databse entry, containing values, additionnal values and a comment
    * @returns {Object} A DOM element containing the databse entry */
   _buildDatabaseElement(data) {
     const element = document.createElement('P');
     const v = data.values;
     element.innerHTML = `
-      <span class="value">${v[0][0]}, ${v[0][1]}, ${v[0][2]} / ${v[1][0]}, ${v[1][1]}, ${v[1][2]} / ${v[2][0]}, ${v[2][1]}, ${v[2][2]}</span>
+      &lt;span class="value">${v[0][0]}, ${v[0][1]}, ${v[0][2]} / ${v[1][0]}, ${v[1][1]}, ${v[1][2]} / ${v[2][0]}, ${v[2][1]}, ${v[2][2]}&lt;/span>
     `;
     // Additionnal content
     if (data.additionnal.length > 0) {
       const a = data.additionnal;
       element.innerHTML += `
-        <span class="additionnal">${a[0][0]}-${a[0][1]}-${a[0][2]} / ${a[1][0]}-${a[1][1]}-${a[1][2]} / ${a[2][0]}-${a[2][1]}-${a[2][2]}</span>
+        &lt;span class="additionnal">${a[0][0]}-${a[0][1]}-${a[0][2]} / ${a[1][0]}-${a[1][1]}-${a[1][2]} / ${a[2][0]}-${a[2][1]}-${a[2][2]}&lt;/span>
       `;
     } else {
       element.innerHTML += `
-        <span class="additionnal">-</span>
+        &lt;span class="additionnal">-&lt;/span>
       `;      
     }
     // Comment section
     if (data.comment !== '') {
       element.innerHTML += `
-        <span class="comment">${data.comment}</span>
+        &lt;span class="comment">${data.comment}&lt;/span>
       `;
     } else {
       element.innerHTML += `
-        <span class="comment">-</span>
+        &lt;span class="comment">-&lt;/span>
       `;      
     }
     return element;
@@ -544,9 +572,9 @@ class LPSA {
    * @name _addDatabaseElement
    * @static
    * @memberof LPSA
-   * @description <blockquote>
+   * @description &lt;blockquote>
    * Callback method to open the new element database entry modal. It will create a default database if there isn't one already defined.
-   * </blockquote> */
+   * &lt;/blockquote> */
   _addDatabaseElement() {
     // if no db, create an empty one to element addition doesn't automatically fails
     if (this._db === null) {
@@ -565,9 +593,9 @@ class LPSA {
    * @name _editDatabaseElement
    * @static
    * @memberof LPSA
-   * @description <blockquote>
+   * @description &lt;blockquote>
    * Method to edit an existing entry in the database. It will update the aside's once the value has been updated.
-   * </blockquote>
+   * &lt;/blockquote>
    * @param {Number} seriesNumber - The element associated series number
    * @param {Number} elementNumber - The element associated number in the series
    * @param {String} type - The element type ; either goFor' or 'goAgainst'
@@ -582,9 +610,9 @@ class LPSA {
    * @name _removeDatabaseElement
    * @static
    * @memberof LPSA
-   * @description <blockquote>
+   * @description &lt;blockquote>
    * Method to remove an existing entry in the database. It will update the aside's once the value has been updated.
-   * </blockquote>
+   * &lt;/blockquote>
    * @param {Number} seriesNumber - The element associated series number
    * @param {Number} elementNumber - The element associated number in the series
    * @param {String} type - The element type ; either goFor' or 'goAgainst' */
@@ -598,9 +626,9 @@ class LPSA {
    * @name _exportDatabase
    * @static
    * @memberof LPSA
-   * @description <blockquote>
+   * @description &lt;blockquote>
    * Method to export the loaded database as a .JSON file to the client.
-   * </blockquote> */
+   * &lt;/blockquote> */
   _exportDatabase() {
     if (this._db !== null) {
       const link = document.createElement('A');
@@ -622,15 +650,15 @@ class LPSA {
    * @name _clearDatabase
    * @static
    * @memberof LPSA
-   * @description <blockquote>
+   * @description &lt;blockquote>
    * Method to remove the loaded database from the client session.
-   * </blockquote> */
+   * &lt;/blockquote> */
   _clearDatabase() {
     if (this._db) {
       const date = this._db.date;
       document.getElementById('feedback-label').innerHTML = `Suppression de la base de donnée du ${date}...`;
-      document.getElementById('db-info').innerHTML = `<p>Aucune information disponible, veuillez charger une base de donnée.</p>`
-      document.getElementById('aside-content').innerHTML = '<i>Aucune donnée chargée en session. Veuillez glisser/déposer un fichier (.JSON) de base de donnée nimporte où sur cette page.</i>'; // Clear previous content
+      document.getElementById('db-info').innerHTML = `&lt;p>Aucune information disponible, veuillez charger une base de donnée.&lt;/p>`
+      document.getElementById('aside-content').innerHTML = '&lt;i>Aucune donnée chargée en session. Veuillez glisser/déposer un fichier (.JSON) de base de donnée nimporte où sur cette page.&lt;/i>'; // Clear previous content
       window.localStorage.removeItem('session-db');
       this._db = null;
       document.getElementById('feedback-label').innerHTML = `Base de donnée supprimée.`;
@@ -646,16 +674,16 @@ class LPSA {
    * @name _performInputAnalysis
    * @static
    * @memberof LPSA
-   * @description <blockquote>
+   * @description &lt;blockquote>
    * After a valid input submitted, perform an analysis of input values against the session database, to retrieve matching results.
-   * </blockquote>
+   * &lt;/blockquote>
    * @param {Number} length - The target series length to compare input with */
   _performInputAnalysis(length) {
     document.getElementById('feedback-label').innerHTML = `Démarrage de l'analyse, serie évaluée ${length}/9...`;
     this._perf.analysis.m1 = performance.now();
     // Select matching input from given length
     let targetData = null;
-    for (let i = 0; i < this._db.data.length; ++i) {
+    for (let i = 0; i &lt; this._db.data.length; ++i) {
       if (this._db.data[i].seriesLength === length) {
         targetData = this._db.data[i];
         break;
@@ -687,19 +715,19 @@ class LPSA {
    * @name __computeCandidates
    * @static
    * @memberof LPSA
-   * @description <blockquote>
-   * Auxilliary method for <code>_performInputAnalysis</code> which computes the candidates for a given input according to user's criterias set through range sliders.
-   * </blockquote> 
-   * @param {Array<Object>} targetArray - The target array to compare input with.
-   * @returns {Array<Object>} An array containing all candidates database entries which met the filtering criterias */
+   * @description &lt;blockquote>
+   * Auxilliary method for &lt;code>_performInputAnalysis&lt;/code> which computes the candidates for a given input according to user's criterias set through range sliders.
+   * &lt;/blockquote> 
+   * @param {Array&lt;Object>} targetArray - The target array to compare input with.
+   * @returns {Array&lt;Object>} An array containing all candidates database entries which met the filtering criterias */
   __computeCandidates(targetArray) {
     let outputCandidates = []; // In this aray, we store the distance value with input. The lower the best
-    for (let i = 0; i < targetArray.length; ++i) {
+    for (let i = 0; i &lt; targetArray.length; ++i) {
       // Perform iteration on the 3 triplets
       let distance = 0;
       let usableCandidate = true; // Is the studied candidate worth adding to results
-      for (let j = 0; j < 3; ++j) {
-        for (let k = 0; k < 3; ++k) {
+      for (let j = 0; j &lt; 3; ++j) {
+        for (let k = 0; k &lt; 3; ++k) {
           // We aim to compute a distance between target input and studied series.
           // The distance is a substraction (in abs value) of those value
           // If values are from a different tens, we ignore the comparison*
@@ -707,14 +735,14 @@ class LPSA {
           const studiedTens = parseInt(`${targetArray[i].values[j][k] / 10}`[0]);
           const inputTens = parseInt(`${this._input[j][k] / 10}`[0]);
           // Don't compare valid input with db value at 0
-          if (this._input[j][k] !== 0 && targetArray[i].values[j][k] === 0) {
+          if (this._input[j][k] !== 0 &amp;&amp; targetArray[i].values[j][k] === 0) {
             // Candidate is not relevant as a result -> do not compare input value facing a 0
             usableCandidate = false;
           } else {
             if (studiedTens === inputTens) {
               // First use case, tens are the same, compute distance
               distance += Math.abs(targetArray[i].values[j][k] - this._input[j][k]);
-            } else if (Math.abs(targetArray[i].values[j][k] - this._input[j][k]) <= this._tensThreshold) {
+            } else if (Math.abs(targetArray[i].values[j][k] - this._input[j][k]) &lt;= this._tensThreshold) {
               // Otherwise, the absolute substraction is under or equal to tolerance threshold
               distance += Math.abs(targetArray[i].values[j][k] - this._input[j][k]);
             } else {
@@ -725,7 +753,7 @@ class LPSA {
         }
       }
       // Push result to array only if valid, and over required precision
-      if (usableCandidate === true && distance < 100 && (100 - distance) >= this._precision) {
+      if (usableCandidate === true &amp;&amp; distance &lt; 100 &amp;&amp; (100 - distance) >= this._precision) {
         outputCandidates.push({
           distance: distance,
           series: targetArray[i]
@@ -744,9 +772,9 @@ class LPSA {
    * @name _addElementModal
    * @static
    * @memberof LPSA
-   * @description <blockquote>
+   * @description &lt;blockquote>
    * Displays the new element modal, and handle its event to add a new element to the database if the input is valid.
-   * </blockquote> */
+   * &lt;/blockquote> */
   _addElementModal() {
     const overlay = document.getElementById('modal-overlay');
     // Open modal event
@@ -764,15 +792,15 @@ class LPSA {
           ];
           // Then ensure that there are more than 4 inputs filled
           let isFilled = 0;
-          for (let i = 0; i < input.length; ++i) {
-            for (let j = 0; j < input[i].length; ++j) {
+          for (let i = 0; i &lt; input.length; ++i) {
+            for (let j = 0; j &lt; input[i].length; ++j) {
               if (input[i][j] > 0) {
                 ++isFilled;
               }
             }
           }
           // Not enough filled data
-          if (isFilled < 4) {
+          if (isFilled &lt; 4) {
             window.notification.warning({  message: `L'indice de valeur de cette serie est inférieur a 4/9` });
           } else {
             const outputElement = {
@@ -789,7 +817,7 @@ class LPSA {
               ];
             }
             // Iterate DB to append new element in proper section
-            for (let i = 0; i < this._db.data.length; ++i) {
+            for (let i = 0; i &lt; this._db.data.length; ++i) {
               if (this._db.data[i].seriesLength === isFilled) {
                 if (overlay.querySelector('#switch').checked) {
                   this._db.data[i].goAgainst.push(outputElement);
@@ -814,9 +842,9 @@ class LPSA {
    * @name _editElementModal
    * @static
    * @memberof LPSA
-   * @description <blockquote>
+   * @description &lt;blockquote>
    * Displays the edit element modal, and handle its event to edit the element in the database if the input is valid.
-   * </blockquote> 
+   * &lt;/blockquote> 
    * @param {Number} seriesNumber - The element associated series number
    * @param {Number} elementNumber - The element associated number in the series
    * @param {String} type - The element type ; either goFor' or 'goAgainst' */
@@ -866,15 +894,15 @@ class LPSA {
           ];
           // Then ensure that there are more than 4 inputs filled
           let isFilled = 0;
-          for (let i = 0; i < input.length; ++i) {
-            for (let j = 0; j < input[i].length; ++j) {
+          for (let i = 0; i &lt; input.length; ++i) {
+            for (let j = 0; j &lt; input[i].length; ++j) {
               if (input[i][j] > 0) {
                 ++isFilled;
               }
             }
           }
           // Not enough filled data
-          if (isFilled < 4) {
+          if (isFilled &lt; 4) {
             window.notification.warning({  message: `L'indice de valeur de cette serie est inférieur a 4/9` });
           } else {
             const outputElement = {
@@ -892,14 +920,14 @@ class LPSA {
             }
             // Ensure the element has changed seriesType (ie was goFor, became goAgainst)
             if (
-              (type === 'goFor' && overlay.querySelector('#switch').checked === true) ||
-              (type === 'goAgainst' && overlay.querySelector('#switch').checked === false) ||
+              (type === 'goFor' &amp;&amp; overlay.querySelector('#switch').checked === true) ||
+              (type === 'goAgainst' &amp;&amp; overlay.querySelector('#switch').checked === false) ||
               (seriesNumber !== isFilled)
             ) {
               // Remove from existing series type
               this._removeDatabaseElement(seriesNumber, elementNumber, type);
               // Now push in new seriesy type
-              for (let i = 0; i < this._db.data.length; ++i) {
+              for (let i = 0; i &lt; this._db.data.length; ++i) {
                 if (this._db.data[i].seriesLength === isFilled) {
                   if (overlay.querySelector('#switch').checked) {
                     this._db.data[i].goAgainst.push(outputElement);
@@ -928,11 +956,11 @@ class LPSA {
    * @name _resultsModal
    * @static
    * @memberof LPSA
-   * @description <blockquote>
+   * @description &lt;blockquote>
    * Displays the results modal with all provided candidates, sorted by confidence and for each types
-   * </blockquote> 
-   * @param {Array<Object>} goForCandidates - The candidates elements for 'goFor' type
-   * @param {Array<Object>} goAgainstCandidates - The candidates elements for 'goAgainst' type */
+   * &lt;/blockquote> 
+   * @param {Array&lt;Object>} goForCandidates - The candidates elements for 'goFor' type
+   * @param {Array&lt;Object>} goAgainstCandidates - The candidates elements for 'goAgainst' type */
   _resultsModal(goForCandidates, goAgainstCandidates) {
     const overlay = document.getElementById('modal-overlay');
     // Open modal event
@@ -946,27 +974,27 @@ class LPSA {
           ${v[0][0]}, ${v[0][1]}, ${v[0][2]} / ${v[1][0]}, ${v[1][1]}, ${v[1][2]} / ${v[2][0]}, ${v[2][1]}, ${v[2][2]}
         `;
         container.querySelector('#study-stats').innerHTML = `
-          Un total de ${goForCandidates.length + goAgainstCandidates.length} résultat(s) ont été trouvés dans la base de donnée.<br>
-          Ces résultats ont été trouvés en ${((this._perf.db.m2 - this._perf.db.m1) / 1000).toFixed(3)} seconde(s).<br><br>
-          Le nombre de résultats à afficher par catégorie est de <b>${this._resultsAmount}</b>.<br>
-          La tolérance pour les calculs entre dizaines est de <b>${this._tensThreshold}</b>.<br>
-          La précision minimale pour ces résultats est de <b>${this._precision}%</b>.
+          Un total de ${goForCandidates.length + goAgainstCandidates.length} résultat(s) ont été trouvés dans la base de donnée.&lt;br>
+          Ces résultats ont été trouvés en ${((this._perf.db.m2 - this._perf.db.m1) / 1000).toFixed(3)} seconde(s).&lt;br>&lt;br>
+          Le nombre de résultats à afficher par catégorie est de &lt;b>${this._resultsAmount}&lt;/b>.&lt;br>
+          La tolérance pour les calculs entre dizaines est de &lt;b>${this._tensThreshold}&lt;/b>.&lt;br>
+          La précision minimale pour ces résultats est de &lt;b>${this._precision}%&lt;/b>.
         `;
         // Update GUI with best candidates
-        for (let i = 0; i < this._resultsAmount; ++i) {
+        for (let i = 0; i &lt; this._resultsAmount; ++i) {
           // Only add goFor candidate if exists in results
           if (goForCandidates[i]) {
             const goForElement = this._buildDatabaseElement(goForCandidates[i].series);
             const goForItem = document.createElement('DIV');
             goForItem.classList.add('category-item');
             goForItem.innerHTML = `
-              <h4>${100 - goForCandidates[i].distance}%</h4>
+              &lt;h4>${100 - goForCandidates[i].distance}%&lt;/h4>
             `;
             goForItem.appendChild(goForElement);
             container.querySelector('#go-for').appendChild(goForItem);
           } else if (container.querySelector('#go-for').innerHTML === '') {
             const element = document.createElement('P');
-            element.innerHTML = '<b>Aucun résultats pour cette catégorie</b>';
+            element.innerHTML = '&lt;b>Aucun résultats pour cette catégorie&lt;/b>';
             container.querySelector('#go-for').appendChild(element);
           }
           // Same goes for goAgainst candidates
@@ -975,13 +1003,13 @@ class LPSA {
             const goAgainstItem = document.createElement('DIV');
             goAgainstItem.classList.add('category-item');
             goAgainstItem.innerHTML = `
-              <h4>${100 - goAgainstCandidates[i].distance}%</h4>
+              &lt;h4>${100 - goAgainstCandidates[i].distance}%&lt;/h4>
             `;
             goAgainstItem.appendChild(goAgainstElement);
             container.querySelector('#go-against').appendChild(goAgainstItem);
           } else if (container.querySelector('#go-against').innerHTML === '') {
             const element = document.createElement('P');
-            element.innerHTML = '<b>Aucun résultats pour cette catégorie</b>';
+            element.innerHTML = '&lt;b>Aucun résultats pour cette catégorie&lt;/b>';
             container.querySelector('#go-against').appendChild(element);
           }
         }
@@ -1010,9 +1038,9 @@ class LPSA {
    * @name _clearDatabaseModal
    * @static
    * @memberof LPSA
-   * @description <blockquote>
+   * @description &lt;blockquote>
    * Acts like a confirm dialog before erasing the session database. Also provides a button to export locally the database.
-   * </blockquote> */
+   * &lt;/blockquote> */
   _clearDatabaseModal() {
     if (this._db === null) {
       this._clearDatabase();
@@ -1043,9 +1071,9 @@ class LPSA {
    * @name _infoModal
    * @static
    * @memberof LPSA
-   * @description <blockquote>
+   * @description &lt;blockquote>
    * Generic information about the website.
-   * </blockquote> */
+   * &lt;/blockquote> */
   _infoModal() {
     const overlay = document.getElementById('modal-overlay');
     // Open modal event
@@ -1065,12 +1093,12 @@ class LPSA {
    * @name _closeModal
    * @static
    * @memberof LPSA
-   * @description <blockquote>
+   * @description &lt;blockquote>
    * Method to request a modal closure.
-   * </blockquote> 
+   * &lt;/blockquote> 
    * @param {Event} e - The associated click event */
   _closeModal(e) {
-    if (e.srcElement.id !== 'modal-overlay' && e.srcElement.className !== 'close-modal' && e.srcElement.id !== 'close-button') {
+    if (e.srcElement.id !== 'modal-overlay' &amp;&amp; e.srcElement.className !== 'close-modal' &amp;&amp; e.srcElement.id !== 'close-button') {
       return;
     }
 
@@ -1089,3 +1117,26 @@ class LPSA {
 
 
 export default LPSA;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="DnD.html">DnD</a></li><li><a href="LPSA.html">LPSA</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.3</a> on Tue Oct 01 2024 11:34:13 GMT+0200 (Central European Summer Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

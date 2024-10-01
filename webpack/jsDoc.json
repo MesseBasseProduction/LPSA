@@ -13,8 +13,8 @@
     "dictionaries": ["jsdoc", "closure"]
   },
   "templates": {
-    "name": "BeerCrackerz",
-    "footerText": "BeerCrackerz",
+    "name": "LPSA",
+    "footerText": "LPSA",
     "cleverLinks": false,
     "monospaceLinks": false,
     "logo": {
@@ -28,7 +28,7 @@
     "destination": "./doc/",
     "template": "templates/default",
     "encoding": "utf8",
-    "readme": "../README.md",
+    "readme": "./README.md",
     "package": "",
     "access": "all",
     "recurse": true,
