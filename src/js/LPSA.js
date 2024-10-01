@@ -4,102 +4,179 @@ import DnD from './utils/DnD';
 class LPSA {
 
 
+  /** @summary <h1>The global LPSA application class, which handles both UI, modelisation and computing.</h1>
+   * @author Arthur Beaulieu
+   * @since September 2024
+   * @description <blockquote>
+   * Providing the whole UI structure and events, so user can interact and performs the following :
+   * <ul>
+   *   <li>manage session database (load database, add entry, edit entry, delete entry, export databse, clear database) ;</li>
+   *   <li>provide input values to compare against the loaded database (additionnal controls over results amounts, precision threshold and tolerance threshold) ;</li>
+   *   <li>matching results displayed in order with confidence index.</li>
+   * </ul>
+   * For confidentiality purpose, no other spec will be defined.
+   * </blockquote> */
   constructor() {
-    this._version = '0.0.6';
-    // Studied values
+    /** @private
+     * @member {string} - The LPSA application version */
+    this._version = '0.0.7';
+
+    // ----- Studied values
+    /** @private
+     * @member {array[array[number]]} - The sutied user input to compare against loaded database */
     this._input = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
-    // Results modificators
+
+    // ----- Results modificators
+    /** @private
+     * @member {number} - The threshold to compare values in different tens */
     this._tensThreshold = 0; // Tens tolerance threshold
+    /** @private
+     * @member {number} - The amount of wanted results when comparing inputs to the loaded database */
     this._resultsAmount = 1; // Amount of required results
+    /** @private
+     * @member {number} - The minimal esults confidence required to display results */
     this._precision = 75; // Results' minimal precision
-    // Class internals
+
+    // ----- Class internals
+    /** @private
+     * @member {object} - The aside's scrollbar */
     this._asideScroll = null; // Scrollbar inside aside
+    /** @private
+     * @member {object} - The drag and drop controller to handle JSON dropping */
     this._dndController = null; // Handle db drag'n'drop into UI
+    /** @private
+     * @member {object} - The loaded database */
     this._db = null; // Session database
+
+    // ----- App performances
+    /** @private
+     * @member {object} - Holds the performance timing measures */
     this._perf = {
       db: { m1: null, m2: null },
       analysis: { m1: null, m2: null }
     };
-    // Begin website initialization
+
+    // ----- Begin website initialization
     this._initApp()
       .then(this._events.bind(this))
       .then(this._finalizeInit.bind(this))
-      .catch(err => { // Error are displayed even if DEBUG is set to false, to notify end user to contact support
-        console.error(`LPSA v${this._version} : Fatal error during initialization, please contact support :\n`, err);
+      .catch(err => {
+        window.notification.error({ message: `Erreur fatale à l'initialisation de l'application. Contactez le support` });
+        document.getElementById('feedback-label').innerHTML = `Une ereur fatale est survenue à l'initialisation de l'application, aucune fonctionnalité n'est accessible. Contactez le support.`;
+        console.error(`LPSA v${this._version} : Fatal error during initialization, please contact support with following error :\n`, err);
       });
   }
 
 
-  // Initialization sequence
+  // ---- App initialization sequence
 
 
+  /** @method
+   * @name _initApp
+   * @static
+   * @memberof LPSA
+   * @description <blockquote>
+   * Initializes the drag and drop controller over the <main> DOM element, and tries to load a database stored in the local storage.
+   * If any databse is stored, it will be loaded in session and the aside will be filled with its data.
+   * </blockquote>
+   * @returns {Promise} Promise that is resolved if DnD controller is properly initialized, rejected otherwise */
   _initApp() {
-    return new Promise(resolve => {
-      this._dndController = new DnD({
-        target: '.dnd-container',
-        onDropFile: (fileInfo, data) => {
-          if (fileInfo.type === 'application/json') {
-            this._fillDatabase(DnD.formatAsJSON(data.target.result));
-          } else {
-            window.notification.error({ message: `Format de fichier non pris en charge pour l'import de la base de donnée` });
-            document.getElementById('feedback-label').innerHTML = `Le fichier déposé n'est pas au format supporté (.JSON).`;
+    return new Promise((resolve, reject) => {
+      try {
+        this._dndController = new DnD({
+          target: '.dnd-container',
+          onDropFile: (fileInfo, data) => {
+            if (fileInfo.type === 'application/json') {
+              // If dropped file is a .JSON file, proceed to fill database
+              this._fillDatabase(DnD.formatAsJSON(data.target.result));
+            } else {
+              // Notify user that dropped file isn't expected
+              window.notification.error({ message: `Format de fichier non pris en charge pour l'import de la base de donnée` });
+              document.getElementById('feedback-label').innerHTML = `Le fichier déposé n'est pas au format supporté (.JSON).`;
+            }
           }
+        });
+        // Try to load DB from local storage if any
+        const db = window.localStorage.getItem('session-db');
+        if (db !== null) {
+          this._fillDatabase(JSON.parse(db));
         }
-      });
-      // Try to load DB from local storage
-      const db = window.localStorage.getItem('session-db');
-      if (db !== null) {
-        this._fillDatabase(JSON.parse(db));
+        resolve();        
+      } catch (error) {
+        reject(error);
       }
-      resolve();
     });
   }
 
 
+  /** @method
+   * @name _events
+   * @static
+   * @memberof LPSA
+   * @description <blockquote>
+   * Allow every user interaction by listening to DOM events on specific UI elements.
+   * </blockquote>
+   * @returns {Promise} Promise that is resolved if all events are listened, rejected otherwise */
   _events() {
-    return new Promise(resolve => {
-      // Number inputs
-      document.querySelector('#t1-1').addEventListener('input', this._updateInputNumber.bind(this, '1/1'));
-      document.querySelector('#t1-2').addEventListener('input', this._updateInputNumber.bind(this, '1/2'));
-      document.querySelector('#t1-3').addEventListener('input', this._updateInputNumber.bind(this, '1/3'));
-      document.querySelector('#t2-1').addEventListener('input', this._updateInputNumber.bind(this, '2/1'));
-      document.querySelector('#t2-2').addEventListener('input', this._updateInputNumber.bind(this, '2/2'));
-      document.querySelector('#t2-3').addEventListener('input', this._updateInputNumber.bind(this, '2/3'));
-      document.querySelector('#t3-1').addEventListener('input', this._updateInputNumber.bind(this, '3/1'));
-      document.querySelector('#t3-2').addEventListener('input', this._updateInputNumber.bind(this, '3/2'));
-      document.querySelector('#t3-3').addEventListener('input', this._updateInputNumber.bind(this, '3/3'));
-      // Aside inputs
-      document.querySelector('#aside-toggle').addEventListener('click', this._toggleAside.bind(this));
-      document.querySelector('#db-add').addEventListener('click', this._addDatabaseElement.bind(this));
-      document.querySelector('#db-save').addEventListener('click', this._exportDatabase.bind(this));
-      document.querySelector('#db-erase').addEventListener('click', this._clearDatabaseModal.bind(this));
-      // Result modificators
-      document.querySelector('#threshold-range').addEventListener('input', this._updateThresholdRange.bind(this));
-      document.querySelector('#results-range').addEventListener('input', this._updateResultsRange.bind(this));
-      document.querySelector('#precision-range').addEventListener('input', this._updatePrecisionRange.bind(this));
-      // Submission
-      document.querySelector('#clear-input').addEventListener('click', this._clearInputs.bind(this));
-      document.querySelector('#submit-input').addEventListener('click', this._submitInputs.bind(this));
-      // Blur modal event
-      document.querySelector('#info-modal-button').addEventListener('click', this._infoModal.bind(this));
-      document.querySelector('#modal-overlay').addEventListener('click', this._closeModal.bind(this));
-      resolve();
+    return new Promise((resolve, reject) => {
+      try {
+        // Number inputs
+        document.querySelector('#t1-1').addEventListener('input', this._updateInputNumber.bind(this, '1/1'));
+        document.querySelector('#t1-2').addEventListener('input', this._updateInputNumber.bind(this, '1/2'));
+        document.querySelector('#t1-3').addEventListener('input', this._updateInputNumber.bind(this, '1/3'));
+        document.querySelector('#t2-1').addEventListener('input', this._updateInputNumber.bind(this, '2/1'));
+        document.querySelector('#t2-2').addEventListener('input', this._updateInputNumber.bind(this, '2/2'));
+        document.querySelector('#t2-3').addEventListener('input', this._updateInputNumber.bind(this, '2/3'));
+        document.querySelector('#t3-1').addEventListener('input', this._updateInputNumber.bind(this, '3/1'));
+        document.querySelector('#t3-2').addEventListener('input', this._updateInputNumber.bind(this, '3/2'));
+        document.querySelector('#t3-3').addEventListener('input', this._updateInputNumber.bind(this, '3/3'));
+        // Aside inputs
+        document.querySelector('#aside-toggle').addEventListener('click', this._toggleAside.bind(this));
+        document.querySelector('#db-add').addEventListener('click', this._addDatabaseElement.bind(this));
+        document.querySelector('#db-save').addEventListener('click', this._exportDatabase.bind(this));
+        document.querySelector('#db-erase').addEventListener('click', this._clearDatabaseModal.bind(this));
+        // Result modificators
+        document.querySelector('#threshold-range').addEventListener('input', this._updateThresholdRange.bind(this));
+        document.querySelector('#results-range').addEventListener('input', this._updateResultsRange.bind(this));
+        document.querySelector('#precision-range').addEventListener('input', this._updatePrecisionRange.bind(this));
+        // Submission
+        document.querySelector('#clear-input').addEventListener('click', this._clearInputs.bind(this));
+        document.querySelector('#submit-input').addEventListener('click', this._submitInputs.bind(this));
+        // Blur modal event
+        document.querySelector('#info-button').addEventListener('click', this._infoModal.bind(this));
+        document.querySelector('#modal-overlay').addEventListener('click', this._closeModal.bind(this));
+        resolve();        
+      } catch (error) {
+        reject(error);
+      }
     });
   }
 
 
+  /** @method
+   * @name _finalizeInit
+   * @static
+   * @memberof LPSA
+   * @description <blockquote>
+   * Removes the loading overlay so that the app become visible and usable.
+   * </blockquote>
+   * @returns {Promise} Promise that is resolved when view is ready, rejected otherwise */
   _finalizeInit() {
-    return new Promise(resolve => {
-      document.querySelector('#loading-overlay').style.opacity = 0;
-      setTimeout(() => {
-        document.querySelector('#loading-overlay').style.display = 'none';
-        resolve();
-      }, 400);
+    return new Promise((resolve, reject) => {
+      try {
+        document.querySelector('#loading-overlay').style.opacity = 0;
+        setTimeout(() => {
+          document.querySelector('#loading-overlay').style.display = 'none';
+          resolve();
+        }, 500); // Match animation duration in scss file
+      } catch (error) {
+        reject(error);
+      }
     });
   }
 
 
-  // Input callbacks
+  // ----- Input event callbacks
 
 
   _updateInputNumber(inputString, e) {
@@ -271,7 +348,137 @@ class LPSA {
   }
 
 
-  _buildElement(data) {
+  // ----- Local database handler (all allowed data manipulation)
+
+  // Load a given JSON database into aside and into session memory
+  _fillDatabase(json) {
+    // Ensure the JSON data contains what we expect
+    if (!json.date || !json.data) {
+      window.notification.error({ message: `Le contenu de la base de donnée est mal formaté` });
+      document.getElementById('feedback-label').innerHTML = `Le fichier déposé ne contiens pas les données attentudes.`;
+      return;
+    }
+    // Measure db filling performances (starting point)
+    this._perf.db.m1 = performance.now();
+    // Clear any previous content
+    window.localStorage.removeItem('session-db');
+    document.getElementById('db-info').innerHTML = '';
+    document.getElementById('aside-content').innerHTML = '';
+    // Start the filling of the aside with current database information
+    const date = new Intl.DateTimeFormat('fr', { // Format database date to FR locale
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    }).format(new Date(json.date));
+    document.getElementById('feedback-label').innerHTML = `Import de la base de donnée du ${date}...`;
+    document.getElementById('db-info').appendChild(this.__buildDatabaseInformation(json, date));
+    // Iterate database to fill series
+    for (let i = 0; i < json.data.length; ++i) {
+      const goFor = this.__buildDatabaseSeries(json.data[i], 'goFor', i);
+      document.getElementById('aside-content').appendChild(goFor);
+      const goAgainst = this.__buildDatabaseSeries(json.data[i], 'goAgainst', i);
+      document.getElementById('aside-content').appendChild(goAgainst);
+    }
+    // Save db locally and in storage
+    this._db = json;
+    window.localStorage.setItem('session-db', JSON.stringify(this._db));
+    // Create scrollbar for aside's content
+    this._asideScroll = new window.ScrollBar({
+      target: document.getElementById('aside-content'),
+      minSize: 200,
+      style: {
+        color: '#758C78'
+      }
+    });
+    // Ensure aside's content is rendered with RAF before asking for an update
+    requestAnimationFrame(this._asideScroll.updateScrollbar.bind(this._asideScroll));
+    // Measure db filling performances (ending point)
+    this._perf.db.m2 = performance.now();
+    // Notify user in UI that everything is set
+    window.notification.success({ 
+      message: `Base de donnée du ${date} chargée`,
+      CBtitle: 'Voir les données',
+      callback: () => this._toggleAside()
+    });
+    document.getElementById('feedback-label').innerHTML = `Base de donnée du ${date} chargée en ${((this._perf.db.m2 - this._perf.db.m1) / 1000).toFixed(3)} seconde(s).`;
+  }
+
+
+  __buildDatabaseInformation(db, formattedDate) {
+    let nbElem = 0;
+    for (let i = 0; i < db.data.length; ++i) {
+      nbElem += db.data[i].goFor.length;
+      nbElem += db.data[i].goAgainst.length;
+    }
+    const container = document.createElement('P');
+    container.innerHTML = `
+      ${formattedDate} (version ${db.version})<br>
+      ${nbElem} entrée(s) en base
+    `;
+    return container;
+  }
+
+
+  __buildDatabaseSeries(data, type, i) {
+    // Create series title
+    const series = document.createElement('DIV');
+    series.classList.add('series');
+    series.innerHTML = `
+      <h2>Série ${data.seriesLength}/9, parier <span class="go-${type.substring(2).toLowerCase()}">${type === 'goFor' ? 'Pour' : 'Contre'}</span><br><i>${data[type].length} entrée(s)</i></h2>
+    `;
+    // Create expander/collapser for studied series
+    const expandCollapse = document.createElement('DIV');
+    expandCollapse.innerHTML = '➖'; //➕
+    series.firstElementChild.appendChild(expandCollapse);
+    // Create container and iterate series entries to fill container with
+    const seriesContainer = document.createElement('DIV');
+    // Only iterate entries if any, display no results otherwise
+    if (data[type].length) {
+      for (let j = 0; j < data[type].length; ++j) {
+        // Build databse element
+        const element = this.__buildDatabaseElement(data[type][j]);
+        // Edit element
+        const editButton = document.createElement('BUTTON');
+        editButton.addEventListener('click', () => {
+          this._editElementModal(i, j, type);
+        });
+        editButton.innerHTML = '✏️';
+        element.appendChild(editButton);
+        // Delete element
+        const deleteButton = document.createElement('BUTTON');
+        deleteButton.addEventListener('click', () => {
+          this._removeDatabaseElement(i, j, type);
+        });
+        deleteButton.innerHTML = '🗑️';
+        element.appendChild(deleteButton);
+        // Append element to series container
+        seriesContainer.appendChild(element);
+      }
+    } else {
+      // No results in series
+      const element = document.createElement('P');
+      element.innerHTML = 'Aucune entrée pour cette catégorie';
+      seriesContainer.appendChild(element);
+    }
+    // Expand/collapse event
+    expandCollapse.addEventListener('click', () => {
+      if (expandCollapse.innerHTML === '➖') {
+        expandCollapse.innerHTML = '➕';
+        seriesContainer.style.display = 'none';
+      } else {
+        expandCollapse.innerHTML = '➖';
+        seriesContainer.style.display = 'inherit';
+      }
+      // Update scroll to ensure its re-computed with new height
+      requestAnimationFrame(this._asideScroll.updateScrollbar.bind(this._asideScroll));
+    });
+    // Final DOM chaining before returning element
+    series.appendChild(seriesContainer);
+    return series;
+  }
+
+
+  __buildDatabaseElement(data) {
     const element = document.createElement('P');
     const v = data.values;
     element.innerHTML = `
@@ -299,116 +506,6 @@ class LPSA {
       `;      
     }
     return element;
-  };
-
-
-  // Local db handler (add/remove)
-
-  // Load a given JSON database into aside and into session memory
-  _fillDatabase(json) {
-    // Ensure the JSON data contains what we expect
-    if (!json.date || !json.data) {
-      window.notification.error({ message: `Le contenu de la base de donnée est mal formaté` });
-      document.getElementById('feedback-label').innerHTML = `Le fichier déposé ne contiens pas les données attentudes.`;
-      return;
-    }
-    this._perf.db.m1 = performance.now();
-    // Clear any pevious saved db
-    window.localStorage.removeItem('session-db');
-    // Starting db creation
-    const date = new Intl.DateTimeFormat('fr', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    }).format(new Date(json.date));
-    document.getElementById('feedback-label').innerHTML = `Import de la base de donnée du ${date}...`;
-    document.getElementById('db-info').innerHTML = ''; // Clear previous content
-    document.getElementById('db-info').appendChild(this._buildDatabaseInformation(json, date));
-    document.getElementById('aside-content').innerHTML = ''; // Clear previous content
-    for (let i = 0; i < json.data.length; ++i) {
-      const seriesFor = document.createElement('DIV');
-      seriesFor.classList.add('series');
-      seriesFor.innerHTML = `
-        <h2>Série ${json.data[i].seriesLength}/9, parier <span class="go-for">Pour</span><br><i>${json.data[i].goFor.length} entrée(s)</i></h2>
-      `;
-      // Only iterate goFor if any, display no results otherwise
-      if (json.data[i].goFor.length) {
-        for (let j = 0; j < json.data[i].goFor.length; ++j) {
-          const element = this._buildElement(json.data[i].goFor[j]);
-          // Edit element
-          const editButton = document.createElement('BUTTON');
-          editButton.addEventListener('click', () => {
-            this._editElementModal(i, j, 'goFor');
-          });
-          editButton.innerHTML = '✏️';
-          element.appendChild(editButton);
-          // Delete element
-          const deleteButton = document.createElement('BUTTON');
-          deleteButton.addEventListener('click', () => {
-            this._removeDatabaseElement(i, j, 'goFor');
-          });
-          deleteButton.innerHTML = '🗑️';
-          element.appendChild(deleteButton);
-          seriesFor.appendChild(element);
-        }
-      } else {
-        const element = document.createElement('P');
-        element.innerHTML = 'Aucune entrée pour cette catégorie';
-        seriesFor.appendChild(element);
-      }
-
-      document.getElementById('aside-content').appendChild(seriesFor);
-      let seriesAgainst = document.createElement('DIV');
-      seriesAgainst.classList.add('series');
-      seriesAgainst.innerHTML = `
-        <h2>Série ${json.data[i].seriesLength}/9, parier <span class="go-against">Contre</span><br><i>${json.data[i].goAgainst.length} entrée(s)</i></h2>
-      `;
-      if (json.data[i].goAgainst.length) {
-        for (let j = 0; j < json.data[i].goAgainst.length; ++j) {
-          const element = this._buildElement(json.data[i].goAgainst[j]);
-          // Edit element
-          const editButton = document.createElement('BUTTON');
-          editButton.addEventListener('click', () => {
-            this._editElementModal(i, j, 'goAgainst');
-          });
-          editButton.innerHTML = '✏️';
-          element.appendChild(editButton);
-          // Delete element
-          const deleteButton = document.createElement('BUTTON');
-          deleteButton.addEventListener('click', () => {
-            this._removeDatabaseElement(i, j, 'goAgainst');
-          });
-          deleteButton.innerHTML = '🗑️';
-          element.appendChild(deleteButton);
-          seriesAgainst.appendChild(element);
-        }
-      } else {
-        const element = document.createElement('P');
-        element.innerHTML = 'Aucune entrée pour cette catégorie';
-        seriesAgainst.appendChild(element);
-      }
-      document.getElementById('aside-content').appendChild(seriesAgainst);
-    }
-    // Save db locally and in storage
-    this._db = json;
-    window.localStorage.setItem('session-db', JSON.stringify(this._db));
-    // Create scrollbar for aside's content
-    this._asideScroll = new window.ScrollBar({
-      target: document.getElementById('aside-content'),
-      minSize: 200,
-      style: {
-        color: '#758C78'
-      }
-    });
-    // Ensure aside's content is rendered with RAF before asking for an update
-    requestAnimationFrame(this._asideScroll.updateScrollbar.bind(this._asideScroll));
-    this._perf.db.m2 = performance.now();
-    window.notification.success({ 
-      message: `Base de donnée du ${date} chargée`,
-      CBtitle: 'Voir les données',
-      callback: () => this._toggleAside()
-    });
-    document.getElementById('feedback-label').innerHTML = `Base de donnée du ${date} chargée en ${((this._perf.db.m2 - this._perf.db.m1) / 1000).toFixed(3)} seconde(s).`;
   }
 
 
@@ -468,21 +565,6 @@ class LPSA {
       document.getElementById('feedback-label').innerHTML = `Aucune base de donnée à supprimer.`;
       window.notification.warning({ message: `Aucune base de donnée à supprimer` });
     }
-  }
-
-
-  _buildDatabaseInformation(db, formattedDate) {
-    let nbElem = 0;
-    for (let i = 0; i < db.data.length; ++i) {
-      nbElem += db.data[i].goFor.length;
-      nbElem += db.data[i].goAgainst.length;
-    }
-    const container = document.createElement('P');
-    container.innerHTML = `
-      ${formattedDate} (version ${db.version})<br>
-      ${nbElem} entrée(s) en base
-    `;
-    return container;
   }
 
 
@@ -693,7 +775,7 @@ class LPSA {
         for (let i = 0; i < this._resultsAmount; ++i) {
           // Only add goFor candidate if exists in results
           if (goForCandidates[i]) {
-            const goForElement = this._buildElement(goForCandidates[i].series);
+            const goForElement = this.__buildDatabaseElement(goForCandidates[i].series);
             const goForItem = document.createElement('DIV');
             goForItem.classList.add('category-item');
             goForItem.innerHTML = `
@@ -708,7 +790,7 @@ class LPSA {
           }
           // Same goes for goAgainst candidates
           if (goAgainstCandidates[i]) {
-            const goAgainstElement = this._buildElement(goAgainstCandidates[i].series);
+            const goAgainstElement = this.__buildDatabaseElement(goAgainstCandidates[i].series);
             const goAgainstItem = document.createElement('DIV');
             goAgainstItem.classList.add('category-item');
             goAgainstItem.innerHTML = `

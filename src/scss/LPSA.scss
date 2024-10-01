@@ -198,6 +198,7 @@ aside {
       font-size: 1.7rem;
       padding-top: 1rem;
       margin-bottom: 1.5rem;
+      position: relative;
       text-align: left;
 
       .go-for {
@@ -214,6 +215,14 @@ aside {
         font-style: italic;
         margin: 0;
         padding-right: 0;
+      }
+
+      div {
+        cursor: pointer;
+        position: absolute;
+        right: 2.5rem;
+        top: 1rem;
+        user-select: none;
       }
     }
 
@@ -360,7 +369,7 @@ main {
   }
 }
 
-.info-modal-button {
+.info-button {
   bottom: 1rem;
   cursor: pointer;
   opacity: .8;
