@@ -45,12 +45,22 @@ button {
   }
 
   &.primary {
-    background-color: var(--color-main);
+    background-color: var(--color-green);
 
     &:active,
     &:focus,
     &:hover {
-      background-color: var(--color-main-darker);
+      background-color: var(--color-green-darker);
+    }
+  }
+
+  &.secondary {
+    background-color: var(--color-red);
+
+    &:active,
+    &:focus,
+    &:hover {
+      background-color: var(--color-red-darker);
     }
   }
 }
@@ -159,6 +169,7 @@ aside {
     display: flex;
     height: 5rem;
     justify-content: center;
+    padding: 0 1rem;
     text-align: center;
 
     p {
@@ -202,6 +213,7 @@ aside {
       i {
         font-style: italic;
         margin: 0;
+        padding-right: 0;
       }
     }
 
@@ -209,6 +221,7 @@ aside {
       display: block;
       font-size: 1.4rem;
       margin: 1rem 0;
+      padding-right: 1rem;
     }
 
     p {

@@ -164,6 +164,16 @@
       }    
     }
 
+    &.modal-clear-database {
+      max-width: 33%;
+      text-align: justify;
+      width: 130rem;
+
+      p {
+        margin-bottom: 0;
+      }
+    }
+
     &.modal-info {
       max-width: 66%;
       text-align: justify;

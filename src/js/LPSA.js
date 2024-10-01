@@ -72,7 +72,7 @@ class LPSA {
       document.querySelector('#aside-toggle').addEventListener('click', this._toggleAside.bind(this));
       document.querySelector('#db-add').addEventListener('click', this._addDatabaseElement.bind(this));
       document.querySelector('#db-save').addEventListener('click', this._exportDatabase.bind(this));
-      document.querySelector('#db-erase').addEventListener('click', this._clearDatabase.bind(this));
+      document.querySelector('#db-erase').addEventListener('click', this._clearDatabaseModal.bind(this));
       // Result modificators
       document.querySelector('#threshold-range').addEventListener('input', this._updateThresholdRange.bind(this));
       document.querySelector('#results-range').addEventListener('input', this._updateResultsRange.bind(this));
@@ -458,6 +458,7 @@ class LPSA {
     if (this._db) {
       const date = this._db.date;
       document.getElementById('feedback-label').innerHTML = `Suppression de la base de donnée du ${date}...`;
+      document.getElementById('db-info').innerHTML = `<p>Aucune information disponible, veuillez charger une base de donnée.</p>`
       document.getElementById('aside-content').innerHTML = '<i>Aucune donnée chargée en session. Veuillez glisser/déposer un fichier (.JSON) de base de donnée nimporte où sur cette page.</i>'; // Clear previous content
       window.localStorage.removeItem('session-db');
       this._db = null;
@@ -736,6 +737,32 @@ class LPSA {
         });
 
         overlay.appendChild(container);
+        setTimeout(() => overlay.style.opacity = 1, 50);
+      });
+    }).catch(e => console.error(e));
+  }
+
+
+  _clearDatabaseModal() {
+    if (this._db === null) {
+      this._clearDatabase();
+      return;
+    }
+    const overlay = document.getElementById('modal-overlay');
+    // Open modal event
+    fetch(`assets/html/cleardatabasemodal.html`).then(data => {
+      overlay.style.display = 'flex';
+      data.text().then(htmlString => {
+        const container = document.createRange().createContextualFragment(htmlString);
+        overlay.appendChild(container);
+        overlay.querySelector('#save-button').addEventListener('click', () => {
+          this._exportDatabase();
+          this._closeModal({ srcElement: { id: 'close-button' }});
+        });
+        overlay.querySelector('#confirm-button').addEventListener('click', () => {
+          this._clearDatabase();
+          this._closeModal({ srcElement: { id: 'close-button' }});
+        });
         setTimeout(() => overlay.style.opacity = 1, 50);
       });
     }).catch(e => console.error(e));

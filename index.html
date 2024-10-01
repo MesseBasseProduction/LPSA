@@ -30,11 +30,13 @@
   <meta name="msapplication-TileImage" content="./assets/img/favicon/ms-icon-144x144.png">
   <meta name="theme-color" content="#758C78">
 </head>
-<body class="dnd-container">
+<body>
 <p id="aside-toggle" class="aside-toggle">&rsaquo;</p>
 <aside id="bd-viewer">
   <h1>Base de Données</h1>
-  <div id="db-info" class="db-info"></div>
+  <div id="db-info" class="db-info">
+    <p>Aucune information disponible, veuillez charger une base de donnée.</p>    
+  </div>
   <div class="db-controls">
     <button id="db-add">➕</button>
     <button id="db-save">💾</button>
@@ -44,7 +46,7 @@
     <i>Aucune donnée chargée en session. Veuillez glisser/déposer un fichier (.JSON) de base de donnée nimporte où sur cette page.</i>
   </div>
 </aside>
-<main id="page-content">
+<main id="page-content" class="dnd-container">
   <h1>LPSA</h1>
   <p id="feedback-label">-</p>
   <div class="input-wrapper">
