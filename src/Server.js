@@ -3,7 +3,7 @@ const path = require('path');
 const compression = require('compression');
 const zlib = require('node:zlib');
 // App and preferences
-const version = '0.1.0';
+const version = '0.1.1';
 const port = 8060;
 const app = express();
 // Log server start
@@ -21,13 +21,17 @@ app.use('/assets', express.static(path.join(__dirname, '../assets'), { // Serve 
 
 // Page urls
 app.get('/',  (req, res) => {
-console.log(`${(new Date()).toISOString()} | LPSA v${version} | 200 ${req.originalUrl} page requested, return index.html`);
-res.sendFile(path.join(__dirname, '../index.html'));
+console.log(`${(new Date()).toISOString()} | LPSA v${version} | 200 ${req.originalUrl} page requested, return lpsaml.html`);
+res.sendFile(path.join(__dirname, '../lpsa.html'));
 });
+app.get('/ml',  (req, res) => {
+  console.log(`${(new Date()).toISOString()} | LPSA v${version} | 200 ${req.originalUrl} page requested, return lpsaml.html`);
+  res.sendFile(path.join(__dirname, '../lpsaml.html'));
+  });
 // Send / for all urls, avoid 404
 app.use((req, res) => {
-  console.log(`${(new Date()).toISOString()} | LPSA v${version} | 404 ${req.originalUrl} page requested, return index.html`);
-  res.sendFile(path.join(__dirname, '../index.html'));
+  console.log(`${(new Date()).toISOString()} | LPSA v${version} | 404 ${req.originalUrl} page requested, return lpsa.html`);
+  res.sendFile(path.join(__dirname, '../lpsa.html'));
 });
 
 // Start server console

@@ -1,13 +1,10 @@
 import '../scss/LPSA.scss';
+import AbstractLPSA from './utils/AbstractLPSA';
 import DnD from './utils/DnD';
-import Notification from './utils/Notification';
 import ScrollBar from './utils/ScrollBar';
 
 
-window.notification = new Notification();
-
-
-class LPSA {
+class LPSA extends AbstractLPSA {
 
 
   /** @summary <h1>The global LPSA application class, which handles both UI, modelisation and computing.</h1>
@@ -23,9 +20,7 @@ class LPSA {
    * For confidentiality purpose, no other spec will be defined.
    * </blockquote> */
   constructor() {
-    /** @private
-     * @member {String} - The LPSA application version */
-    this._version = '0.1.0';
+    super();
 
     // ----- Studied values
     /** @private
@@ -43,17 +38,6 @@ class LPSA {
      * @member {Number} - The minimal esults confidence required to display results */
     this._precision = 75; // Results' minimal precision
 
-    // ----- Class internals
-    /** @private
-     * @member {Object} - The aside's scrollbar */
-    this._asideScroll = null; // Scrollbar inside aside
-    /** @private
-     * @member {Object} - The drag and drop controller to handle JSON dropping */
-    this._dndController = null; // Handle db drag'n'drop into UI
-    /** @private
-     * @member {Object} - The loaded database */
-    this._db = null; // Session database
-
     // ----- App performances
     /** @private
      * @member {Object} - Holds the performance timing measures */
@@ -69,7 +53,7 @@ class LPSA {
       .catch(err => {
         window.notification.error({ message: `Erreur fatale à l'initialisation de l'application. Contactez le support` });
         document.getElementById('feedback-label').innerHTML = `Une ereur fatale est survenue à l'initialisation de l'application, aucune fonctionnalité n'est accessible. Contactez le support.`;
-        console.error(`LPSA v${this._version} : Fatal error during initialization, please contact support with following error :\n`, err);
+        console.error(`LPSA v${this._version} : Erreur fatale à l'initialisation de l'application. Contactez le support en précisant l'erreur suivante :\n`, err);
       });
   }
 
@@ -103,7 +87,7 @@ class LPSA {
           }
         });
         // Try to load DB from local storage if any
-        const db = window.localStorage.getItem('session-db');
+        const db = window.localStorage.getItem('lpsa-session-db');
         if (db !== null) {
           this._fillDatabase(JSON.parse(db));
         }
@@ -136,11 +120,6 @@ class LPSA {
         document.querySelector('#t3-1').addEventListener('input', this._updateInputNumber.bind(this, '2/0'));
         document.querySelector('#t3-2').addEventListener('input', this._updateInputNumber.bind(this, '2/1'));
         document.querySelector('#t3-3').addEventListener('input', this._updateInputNumber.bind(this, '2/2'));
-        // Aside inputs
-        document.querySelector('#aside-toggle').addEventListener('click', this._toggleAside.bind(this));
-        document.querySelector('#db-add').addEventListener('click', this._requestNewElement.bind(this));
-        document.querySelector('#db-save').addEventListener('click', this._exportDatabase.bind(this));
-        document.querySelector('#db-erase').addEventListener('click', this._clearDatabaseModal.bind(this));
         // Result modificators
         document.querySelector('#threshold-range').addEventListener('input', this._updateThresholdRange.bind(this));
         document.querySelector('#results-range').addEventListener('input', this._updateResultsRange.bind(this));
@@ -148,33 +127,9 @@ class LPSA {
         // Submission
         document.querySelector('#clear-input').addEventListener('click', this._clearInputs.bind(this));
         document.querySelector('#submit-input').addEventListener('click', this._submitInputs.bind(this));
-        // Blur modal event
-        document.querySelector('#info-button').addEventListener('click', this._infoModal.bind(this));
-        document.querySelector('#modal-overlay').addEventListener('click', this._closeModal.bind(this));
+        // Call for parent class _events
+        super._events();
         resolve();
-      } catch (error) {
-        reject(error);
-      }
-    });
-  }
-
-
-  /** @method
-   * @name _finalizeInit
-   * @static
-   * @memberof LPSA
-   * @description <blockquote>
-   * Removes the loading overlay so that the app become visible and usable.
-   * </blockquote>
-   * @returns {Promise} Promise that is resolved when view is ready, rejected otherwise */
-  _finalizeInit() {
-    return new Promise((resolve, reject) => {
-      try {
-        document.querySelector('#loading-overlay').style.opacity = 0;
-        setTimeout(() => {
-          document.querySelector('#loading-overlay').style.display = 'none';
-          resolve();
-        }, 500); // Match animation duration in scss file
       } catch (error) {
         reject(error);
       }
@@ -184,23 +139,6 @@ class LPSA {
 
   // ----- Input event callbacks
 
-
-  /** @method
-   * @name _toggleAside
-   * @static
-   * @memberof LPSA
-   * @description <blockquote>
-   * Either opens or closes the aside displaying the database values, depending of its current expand/collapse state.
-   * </blockquote> */
-  _toggleAside() {
-    if (document.getElementById('bd-viewer').classList.contains('opened')) {
-      document.getElementById('aside-toggle').innerHTML = '&rsaquo;';
-      document.getElementById('bd-viewer').classList.remove('opened');
-    } else {
-      document.getElementById('aside-toggle').innerHTML = '&lsaquo;';
-      document.getElementById('bd-viewer').classList.add('opened');
-    }
-  }
 
 
   /** @method
@@ -368,7 +306,7 @@ class LPSA {
     // Measure db filling performances (starting point)
     this._perf.db.m1 = performance.now();
     // Clear any previous content
-    window.localStorage.removeItem('session-db');
+    window.localStorage.removeItem('lpsa-session-db');
     document.getElementById('db-info').innerHTML = '';
     document.getElementById('aside-content').innerHTML = '';
     // Start the filling of the aside with current database information
@@ -388,7 +326,7 @@ class LPSA {
     }
     // Save db locally and in storage
     this._db = json;
-    window.localStorage.setItem('session-db', JSON.stringify(this._db));
+    window.localStorage.setItem('lpsa-session-db', JSON.stringify(this._db));
     // Create scrollbar for aside's content
     this._asideScroll = new ScrollBar({
       target: document.getElementById('aside-content'),
@@ -569,7 +507,7 @@ class LPSA {
    * Callback method to open the new element database entry modal. It will create a default database if there isn't one already defined.
    * </blockquote> */
    _requestNewElement() {
-    // if no db, create an empty one to element addition doesn't automatically fails
+    // If no db, create an empty one to element addition doesn't automatically fails
     if (this._db === null) {
       this._db = {
         version: '1',
@@ -651,8 +589,8 @@ class LPSA {
       const date = this._db.date;
       document.getElementById('feedback-label').innerHTML = `Suppression de la base de donnée du ${date}...`;
       document.getElementById('db-info').innerHTML = `<p>Aucune information disponible, veuillez charger une base de donnée.</p>`
-      document.getElementById('aside-content').innerHTML = '<i>Aucune donnée chargée en session. Veuillez glisser/déposer un fichier (.JSON) de base de donnée nimporte où sur cette page.</i>'; // Clear previous content
-      window.localStorage.removeItem('session-db');
+      document.getElementById('aside-content').innerHTML = '<i>Aucune donnée chargée en session. Veuillez glisser/déposer un fichier (.JSON) de base de donnée n\'importe où sur cette page.</i>'; // Clear previous content
+      window.localStorage.removeItem('lpsa-session-db');
       this._db = null;
       document.getElementById('feedback-label').innerHTML = `Base de donnée supprimée.`;
       window.notification.success({ message: `Base de donnée du ${date} supprimée` });
@@ -801,8 +739,20 @@ class LPSA {
               additionnal: [],
               comment: overlay.querySelector('#comment').value
             }
-            // Add additionnal values only if not null
-            if (!isNaN(parseInt(overlay.querySelector('#a1-1').value))) {
+            // Add additionnal values only if one of them is not null
+            let hasAdditionnal = false;
+            for (let i = 0; i < 3; ++i) {
+              for (let j = 0; j < 3; ++j) {
+                if (!isNaN(parseInt(overlay.querySelector(`#a${i}-${j}`).value))) {
+                  hasAdditionnal = true;
+                  break;
+                }
+              }
+              if (hasAdditionnal) {
+                break;
+              }
+            }
+            if (hasAdditionnal === true) {
               outputElement.additionnal = [
                 [parseInt(overlay.querySelector('#a1-1').value) || 0, parseInt(overlay.querySelector('#a1-2').value) || 0, parseInt(overlay.querySelector('#a1-3').value) || 0],
                 [parseInt(overlay.querySelector('#a2-1').value) || 0, parseInt(overlay.querySelector('#a2-2').value) || 0, parseInt(overlay.querySelector('#a2-3').value) || 0],
@@ -1024,85 +974,6 @@ class LPSA {
         setTimeout(() => overlay.style.opacity = 1, 50);
       });
     }).catch(e => console.error(e));
-  }
-
-
-  /** @method
-   * @name _clearDatabaseModal
-   * @static
-   * @memberof LPSA
-   * @description <blockquote>
-   * Acts like a confirm dialog before erasing the session database. Also provides a button to export locally the database.
-   * </blockquote> */
-  _clearDatabaseModal() {
-    if (this._db === null) {
-      this._clearDatabase();
-      return;
-    }
-    const overlay = document.getElementById('modal-overlay');
-    // Open modal event
-    fetch(`assets/html/cleardatabasemodal.html`).then(data => {
-      overlay.style.display = 'flex';
-      data.text().then(htmlString => {
-        const container = document.createRange().createContextualFragment(htmlString);
-        overlay.appendChild(container);
-        overlay.querySelector('#save-button').addEventListener('click', () => {
-          this._exportDatabase();
-          this._closeModal({ srcElement: { id: 'close-button' }});
-        });
-        overlay.querySelector('#confirm-button').addEventListener('click', () => {
-          this._clearDatabase();
-          this._closeModal({ srcElement: { id: 'close-button' }});
-        });
-        setTimeout(() => overlay.style.opacity = 1, 50);
-      });
-    }).catch(e => console.error(e));
-  }
-
-
-  /** @method
-   * @name _infoModal
-   * @static
-   * @memberof LPSA
-   * @description <blockquote>
-   * Generic information about the website.
-   * </blockquote> */
-  _infoModal() {
-    const overlay = document.getElementById('modal-overlay');
-    // Open modal event
-    fetch(`assets/html/infomodal.html`).then(data => {
-      overlay.style.display = 'flex';
-      data.text().then(htmlString => {
-        const container = document.createRange().createContextualFragment(htmlString);
-        overlay.appendChild(container);
-        overlay.querySelector('#app-version').innerHTML = this._version;
-        setTimeout(() => overlay.style.opacity = 1, 50);
-      });
-    }).catch(e => console.error(e));
-  }
-
-
-  /** @method
-   * @name _closeModal
-   * @static
-   * @memberof LPSA
-   * @description <blockquote>
-   * Method to request a modal closure.
-   * </blockquote>
-   * @param {vent} e - The associated click event */
-  _closeModal(e) {
-    if (e.srcElement.id !== 'modal-overlay' && e.srcElement.className !== 'close-modal' && e.srcElement.id !== 'close-button') {
-      return;
-    }
-
-    const overlay = document.getElementById('modal-overlay');
-    if (overlay.style.display === 'flex') {
-      overlay.style.opacity = 0;
-      setTimeout(() => {
-        overlay.innerHTML = '';
-        overlay.style = '';
-      }, 400);
-    }
   }
 
 

@@ -51,7 +51,7 @@ describe('LPSA unit tests :', () => {
 
   it('LPSA proper construction', done => {
     lpsa = new LPSA();
-    expect(JSON.stringify(lpsa)).toEqual('{"_version":"0.1.0","_input":[[0,0,0],[0,0,0],[0,0,0]],"_tensThreshold":0,"_resultsAmount":1,"_precision":75,"_asideScroll":null,"_dndController":{"_container":{},"_borderStyle":""},"_db":null,"_perf":{"db":{"m1":null,"m2":null},"analysis":{"m1":null,"m2":null}}}');
+    expect(JSON.stringify(lpsa)).toEqual('{"_version":"0.1.1","_input":[[0,0,0],[0,0,0],[0,0,0]],"_tensThreshold":0,"_resultsAmount":1,"_precision":75,"_asideScroll":null,"_dndController":{"_container":{},"_borderStyle":""},"_db":null,"_perf":{"db":{"m1":null,"m2":null},"analysis":{"m1":null,"m2":null}}}');
     done();
   });
 

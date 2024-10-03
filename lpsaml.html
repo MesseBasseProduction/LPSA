@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+  <meta charset="utf-8"/>
+  <title>LPSA ML</title>
+  <meta content="ie=edge" http-equiv="x-ua-compatible"/>
+  <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+  <meta content="initial-scale=1" name="viewport"/>
+  <meta name="description" content="">
+  <link rel="canonical" href=""/>
+  <link rel="stylesheet" href="./assets/dist/LPSAML.bundle.css"/>
+  <!-- Favicon zone -->
+  <link rel="apple-touch-icon" sizes="57x57" href="./assets/img/favicon/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="./assets/img/favicon/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="./assets/img/favicon/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="./assets/img/favicon/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="./assets/img/favicon/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="./assets/img/favicon/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="./assets/img/favicon/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="./assets/img/favicon/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="./assets/img/favicon/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="./assets/img/favicon/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="./assets/img/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="./assets/img/favicon/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="./assets/img/favicon/favicon-16x16.png">
+  <link rel="manifest" href="./assets/img/favicon/manifest.json">
+  <meta name="msapplication-TileColor" content="#758C78">
+  <meta name="msapplication-TileImage" content="./assets/img/favicon/ms-icon-144x144.png">
+  <meta name="theme-color" content="#758C78">
+</head>
+<body>
+<p id="aside-toggle" class="aside-toggle">&rsaquo;</p>
+<a href="/" class="set-analysis">Analyse d'ensembles</a>
+<aside id="bd-viewer">
+  <h1>Base de Données</h1>
+  <div id="db-info" class="db-info">
+    <p>Aucune information disponible, veuillez charger une base de donnée.</p>    
+  </div>
+  <div class="db-controls">
+    <button id="db-add">➕</button>
+    <button id="db-save">💾</button>
+    <button id="db-erase">🗑️</button>
+  </div>
+  <div id="aside-content" class="aside-content">
+    <i>Aucune donnée chargée en session. Veuillez glisser/déposer un fichier de base de donnée brute (CSV) ou formattée (JSON) n'importe où sur cette page.</i>
+  </div>
+</aside>
+<main id="page-content" class="dnd-container">
+  <h1>LPSA – Analyse de côtes</h1>
+  <p id="feedback-label">Veuillez glisser-déposer une base de données brute (CSV) ou formattée (JSON) n'importe où sur la page.</p>
+  <div class="submission-wrapper">
+    <div class="button-container">
+      <button id="filter-input">Filtrage</button>
+    </div>
+  </div>
+</main>
+<a id="info-button" class="info-button">ℹ️</a>
+<div id="loading-overlay" class="loading-overlay"></div>
+<div id="modal-overlay" class="modal-overlay"></div>
+<script type="text/javascript" src="./assets/dist/LPSAML.bundle.js"></script>
+<script type="text/javascript">
+  window.LPSAML = new LPSAML();
+</script>
+</body>
+</html>

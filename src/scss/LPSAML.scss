@@ -1,0 +1,53 @@
+@import './utils/variables';
+@import './utils/global';
+
+aside {
+  .aside-content {
+    p {
+      background-color: white;
+      border: solid 1px rgba(0, 0, 0, .15);
+      border-radius: var(--spacing-tiny);
+      font-size: 1.2rem;
+      margin-bottom: .75rem;
+      padding: .25rem var(--spacing-small);
+      position: relative;
+      width: calc(100% - var(--spacing));
+
+      button {
+        border: none;
+        opacity: .5;
+        position: absolute;
+        top: 0;
+        width: var(--spacing);
+
+        transition: all .2s;
+
+        &:active,
+        &:focus,
+        &:hover {
+          background-color: inherit;
+          opacity: 1;
+        }
+
+        &:first-of-type {
+          right: var(--spacing);
+        }
+
+        &:last-of-type {
+          right: 0rem;
+        }
+      }
+      
+      &:first-of-type {
+        margin-top: var(--spacing-small);
+      }
+      
+      &:last-of-type {
+        margin-bottom: var(--spacing-small);
+      }
+    }
+  }
+}
+
+@import 'utils/modal';
+@import 'utils/responsive';
