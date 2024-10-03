@@ -25,7 +25,7 @@ class LPSA {
   constructor() {
     /** @private
      * @member {String} - The LPSA application version */
-    this._version = '0.0.7';
+    this._version = '0.1.0';
 
     // ----- Studied values
     /** @private
