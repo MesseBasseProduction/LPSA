@@ -743,7 +743,7 @@ class LPSA extends AbstractLPSA {
             let hasAdditionnal = false;
             for (let i = 0; i < 3; ++i) {
               for (let j = 0; j < 3; ++j) {
-                if (!isNaN(parseInt(overlay.querySelector(`#a${i}-${j}`).value))) {
+                if (!isNaN(parseInt(overlay.querySelector(`#a${i + 1}-${j + 1}`).value))) {
                   hasAdditionnal = true;
                   break;
                 }

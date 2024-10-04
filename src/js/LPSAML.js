@@ -399,6 +399,8 @@ class LPSAML extends AbstractLPSA {
           // Not enough filled data
           if (!hasResults) {
             window.notification.warning({  message: `Veuillez remplir tout les champs` });
+          } else if ([0, 1, 2].indexOf(parseInt(result)) === -1) {
+            window.notification.warning({  message: `Le champ résultat doit avoir la valeur 0, 1 ou 2 seulement` });
           } else {
             this._db.data.push([
               parseFloat(odds[0].replace(',', '.')),
@@ -407,7 +409,7 @@ class LPSAML extends AbstractLPSA {
               parseFloat(percentage[0].replace(',', '.')),
               parseFloat(percentage[1].replace(',', '.')),
               parseFloat(percentage[2].replace(',', '.')),
-              parseFloat(result.replace(',', '.')),
+              parseInt(result),
             ]);
             // Then update local database
             this._fillDatabase(this._db);
